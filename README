@@ -1,0 +1,34 @@
+Initial Street View Demo
+Danny Zhu and Zak Stone
+Fall 2011
+
+License: Intended only for use in connection with the Street View research project of Scott Kominers, Ed Glaeser, and Zak Stone. To discuss other applications, please contact Scott or Zak <zstone@gmail.com>. 
+
+
+How to run the Street View demo
+-------------------------------
+- After installation, run the following commands in the main project directory with a CACHE_DIR of your choosing:
+
+python cache_route.py 'maxwell dworkin, 02138' 'lise, 02138' [CACHE_DIR]
+python street_view_sphere.py [CACHE_DIR]
+
+- Press 'j' to advance along the route, 'k' to go backwards once you are on the route
+- Press 'e' when on the route to enhance the current image
+- Click and drag with the primary mouse button to look around
+- Click with the secondary mouse button to move off the route in the direction of the nearest panorama
+- Press 's' to toggle the display of the spheres indicating adjacent panoramas
+- Press ESC to exit
+
+
+Installation (partial notes)
+------------
+
+PyOpenGL:
+Ubuntu: apt-get install python-opengl
+Mac OS X: pip install pyopengl
+
+Mapnik:
+apt-get install python-mapnik
+
+Eventlet:
+pip install eventlet
