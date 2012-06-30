@@ -1,0 +1,26 @@
+========== June 2012 - streetview project database ==========
+
+Dependencies:
+libcurl
+ImageMagick++
+
+
+Building:
+An up to date version of g++ is required, so that the -std=c++11 option is available.
+
+Running make will build all the object files and the main executable.
+The main executable is only rarely used for global tasks (for instance I've used it to
+update the format of our saved data) and can normally be ignored.
+
+Running make lib will pack the necessary object files into a static library.
+This is the library that our web service links to, so don't forget to build it as well!
+
+As long as the required libraries are in g++'s library path, you shouldn't have to modify
+the makefile for your machine. However, should you want to use main.cpp you will have to
+make sure that the paths to the panorama directory and metadata directory are correct
+for your machine.
+
+
+Credits:
+pugixml is an open source xml library provided by Google. I did not write any of it.
+

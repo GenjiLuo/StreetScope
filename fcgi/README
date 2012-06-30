@@ -1,0 +1,23 @@
+========== June 2012 - streetview project web service ==========
+
+Dependencies:
+our database library (run "make; make lib" in the database directory)
+
+Dependencies:
+libcurl
+ImageMagick++
+libfcgi
+libfcgi++
+cgicc
+
+
+Building:
+An up to date version of g++ is required, so that the -std=c++11 option is available.
+Running make will produce an executable bin/main.fcgi. This executable is invoked as
+a fastcgi script by Apache on our Amazon EC2 instance.
+
+
+As long as the required libraries are in g++'s library path, you shouldn't have to modify
+the makefile for your machine. The database paths hardcoded in main.cpp are correct for
+our EC2 instance.
+

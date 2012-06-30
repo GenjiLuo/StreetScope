@@ -1,34 +1,25 @@
-Initial Street View Demo
-Danny Zhu and Zak Stone
-Fall 2011
+========== June 2012 - streetview project ==========
 
-License: Intended only for use in connection with the Street View research project of Scott Kominers, Ed Glaeser, and Zak Stone. To discuss other applications, please contact Scott or Zak <zstone@gmail.com>. 
+The streetview project currently has 3 components, each in its own directory:
 
+-database: our custom database that stores copies of streetview panoramas, panorama metadata, and tags.
+-fcgi: the web service that we run on an Amazon Elastic Cloud instance.
+-python: the Google Street View mockup that interacts with our web service to allow users to tag panoramas.
 
-How to run the Street View demo
--------------------------------
-- After installation, run the following commands in the main project directory with a CACHE_DIR of your choosing:
-
-python cache_route.py 'maxwell dworkin, 02138' 'lise, 02138' [CACHE_DIR]
-python street_view_sphere.py [CACHE_DIR]
-
-- Press 'j' to advance along the route, 'k' to go backwards once you are on the route
-- Press 'e' when on the route to enhance the current image
-- Click and drag with the primary mouse button to look around
-- Click with the secondary mouse button to move off the route in the direction of the nearest panorama
-- Press 's' to toggle the display of the spheres indicating adjacent panoramas
-- Press ESC to exit
+For more information on each, see the README files located in each directory.
 
 
-Installation (partial notes)
-------------
+========== Building ==========
 
-PyOpenGL:
-Ubuntu: apt-get install python-opengl
-Mac OS X: pip install pyopengl
+The database and web service are written in C++, compliant with the new 2011 standard.
+Makefiles are included that attempt to build these projects using g++.
+Make sure that you have the most recent version of g++ (g++-4.7 as of June 30),
+as older versions don't recognize some necessary c++11 features.
+There are also a few places where you may have to change hardcoded paths.
+These places are listed in the directory specific READMEs.
 
-Mapnik:
-apt-get install python-mapnik
+June 30 Note: The python application here is out of date.
+I have not updated it to reflect recent changes to the database/webservice;
+as soon as this is done I'll push the changes to the repository.
+-Erik
 
-Eventlet:
-pip install eventlet
