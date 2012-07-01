@@ -209,7 +209,7 @@ bool PhotoDatabase::loadDatabase () {
 bool PhotoDatabase::savePlaintext (char const* fname) const {
    // Open File
    string filename = _rootDir + "plaintext/" + fname;
-   cout << "Dumping database to " << filename << '.' << '\n';
+   cout << "Saving plaintext database to " << filename << '.' << '\n';
    ofstream file(filename.c_str(), ios_base::binary | ios_base::out | ios_base::trunc);
    if (!file.good())
       return false;
@@ -235,6 +235,7 @@ bool PhotoDatabase::savePlaintext (char const* fname) const {
          for (tagitr = itr.cref().tags().constIterator(); tagitr.valid(); ++tagitr) {
             Tag const& tag = tagitr.cref();
             file << "Tag " << i++ << ":\n";
+            file << "   Id:         " << tag.id()                       << '\n';
             file << "   Target:     " << tag.target()                   << '\n';
             file << "   Timestamp:  " << ctime(tag.timestamp());
             file << "   Theta Low:  " << tag.theta1()                   << '\n';
