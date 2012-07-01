@@ -222,7 +222,7 @@ ostream& DatabaseServer::savePlaintext (ostream& os, cgicc::Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
    printXMLHeader(os);
 
-   // Dump the database.
+   // Write plaintext data
    time_t timestamp = time(0);
    char buffer[64];
    strcpy(buffer, ctime(&timestamp));

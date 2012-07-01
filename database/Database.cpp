@@ -208,7 +208,7 @@ bool PhotoDatabase::loadDatabase () {
 //------------------------------------------------------------------------------
 bool PhotoDatabase::savePlaintext (char const* fname) const {
    // Open File
-   string filename = _rootDir + "db/" + fname;
+   string filename = _rootDir + "plaintext/" + fname;
    cout << "Dumping database to " << filename << '.' << '\n';
    ofstream file(filename.c_str(), ios_base::binary | ios_base::out | ios_base::trunc);
    if (!file.good())
