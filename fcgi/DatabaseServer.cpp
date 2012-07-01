@@ -222,18 +222,21 @@ ostream& DatabaseServer::savePlaintext (ostream& os, cgicc::Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
    printXMLHeader(os);
 
-   // Write plaintext data
+   // Get timestamp and format for use as a filename
    time_t timestamp = time(0);
    char buffer[64];
    strcpy(buffer, ctime(&timestamp));
    unsigned i=0;
-   while (buffer[i] != '\0') {
+   while (buffer[i] != '\n') { // ctime adds "\n\0" at end
       if (buffer[i] == ' ')
          buffer[i] = '_';
       ++i;
    }
+   buffer[i] = '\0'; // replace '\n' with '\0'
+
+   // Write the plaintext data
    ostringstream filename;
-   filename << "db_" << buffer << ".txt";
+   filename << buffer << ".txt";
    bool result = _db.savePlaintext(filename.str().c_str());
    pugi::xml_document doc;
    pugi::xml_node results = prepareDocument(doc);
