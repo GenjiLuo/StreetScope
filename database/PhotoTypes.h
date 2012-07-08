@@ -13,7 +13,7 @@
 #include "Hypergrid.hpp"
 #include "TagTypes.h"
 #include "SimpleCharPool.h"
-#include "MemoryPool.h"
+#include "MemoryPoolF.h"
 
 
 //==============================================================================
@@ -48,12 +48,12 @@ inline std::ostream& operator<< (std::ostream& os, PhotoID photoid) {
 typedef HyperIndex<2> PhotoIndex;
 
 //------------------------------------------------------------------------------
-// Allows one to both look up a photo and uniquely identify it.
+// Allows one to both look up a photo by location and uniquely identify it.
 // A PhotoDatabase has a QTree full of these.
 class PhotoKey {
 private:
-   PhotoID _id;         // global identifier
-   PhotoIndex _index;   // based on its location, used for quick lookups
+   PhotoID _id;         // unique global identifier
+   PhotoIndex _index;   // encodes its location
    
 public:
    PhotoKey () {}
@@ -65,6 +65,19 @@ public:
 
    bool operator== (PhotoKey const& key) const { return id() == key.id(); }
 };
+
+//------------------------------------------------------------------------------
+class TagKey {
+private:
+   TagID _tagid;
+   PhotoID _photoid;
+
+public:
+   TagKey (TagID _tagid, PhotoID _photoid): _tagid(tagid), _photoid(photoid) {};
+   TagID tagID () const { return _tagid; }
+   PhotoID photoID () const { return _photoid; }
+   unsigned hash () const { return _tagid.hash(); }
+}
 
 //------------------------------------------------------------------------------
 // Note: For now we are only using Google's panoids. We should be smarter and
@@ -82,12 +95,12 @@ struct Edge {
 //------------------------------------------------------------------------------
 class EdgeSet : public LinkedList<Edge> {
 public:
-   void add (MemoryPool& pool, Angle angle, CharPoolIndex id) {
-      Link* newlink = static_cast<Link*> (pool.alloc(sizeof(Link)));
+   void add (MemoryPoolF& pool, Angle angle, CharPoolIndex id) {
+      Link* newlink = static_cast<Link*> (pool.alloc());
       new(&newlink->_item) Edge(angle, id);
       addLink(newlink);
    }
-   void add (MemoryPool& pool, Edge const& edge) { LinkedList<Edge>::add(edge, pool); }
+   //void add (MemoryPoolF& pool, Edge const& edge) { LinkedList<Edge>::add(edge, pool); }
 };
 
 //------------------------------------------------------------------------------
@@ -166,12 +179,11 @@ public:
    // writes the PhotoMetadata to the ostream in binary format.
    std::ostream& save (std::ostream& os) const;
 
-   // loads the PhotoMetadata from the ostream.
-   std::istream& load (std::istream& is, MemoryPool& pool);
+   // loads the PhotoMetadata (minus tags) from the ostream.
    std::istream& loadData  (std::istream& is);
    // Returns the number of tags loaded
-   unsigned loadTags  (std::istream& is, MemoryPool& pool);
-   std::istream& loadEdges (std::istream& is, MemoryPool& pool);
+   unsigned loadTags  (std::istream& is, MemoryPoolF& pool);
+   std::istream& loadEdges (std::istream& is, MemoryPoolF& pool);
 
 private:
    // returns the size of the plain old data portion of a PhotoMetadata object

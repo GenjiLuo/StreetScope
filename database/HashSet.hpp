@@ -13,7 +13,6 @@
 #include <iostream>
 #include "Wrap.hpp"
 #include "MemoryPool.h"
-#include "LinkedList.hpp"
 
 
 //==============================================================================
@@ -49,12 +48,70 @@
  * exceeds _trigger.)
  */
 
+
 //==============================================================================
-// Class HashSet<ITEM>
+// Memory Pool Wrappers
 //==============================================================================
 
-template<class ITEM>
+/*
+ * These enable the same HashSet Code to be used with multiple types of Memory Pool.
+ */
+
+//------------------------------------------------------------------------------
+// Base Class
+template<class POOL>
+class MPW;
+
+//------------------------------------------------------------------------------
+// Wrapper for MemoryPoolF
+template<>
+struct MPW<MemoryPoolF> {
+private:
+   MemoryPoolF* _memPoolF;
+
+public:
+   MPW (): _memPoolF(nullptr) {}
+   void construct (unsigned itemSize, unsigned alignSize, unsigned initialCapacity) {
+      _memPoolF = new MemoryPoolF;
+      _memPoolF->setItemSize(itemSize, alignSize);
+      _memPoolF->setMinFree(1);
+      _memPoolF->setNextBlockSize(initialCapacity);
+      _memPoolF->setMinDonationSize(initialCapacity >> 1);
+   }
+   ~MPW () { delete _memPoolF; }
+   void* alloc () { return _memPoolF->alloc(); }
+   void donate (void* ptr, unsigned size) { _memPoolF->donate(ptr, size); }
+   void free (void* ptr) { _memPoolF->free(ptr); }
+   void clear () { _memPoolF->clear(); }
+};
+
+//------------------------------------------------------------------------------
+// Wrapper for MemoryPool
+template<>
+struct MPW<MemoryPool> {
+private:
+   MemoryPool* _memPool;
+   unsigned _size;
+
+public:
+   MPW (): _memPool(nullptr), _size(0) {}
+   void construct (unsigned itemSize, unsigned alignSize, unsigned initialCapacity) {
+      _memPool = new MemoryPool(itemSize * initialCapacity, alignSize);
+   }
+   ~MPW () { delete _memPool; }
+   void* alloc () { return _memPool->alloc(_size); }
+   void donate (void* ptr, unsigned size) { _memPool->donate(ptr, size); }
+   void clear () { _memPool->clear(); }
+};
+
+
+//==============================================================================
+// Class HashSet<ITEM, POOL>
+//==============================================================================
+
+template<class ITEM, class POOL>
 class HashSet {
+//------------------------------------------------------------------------------
 // SubClasses
 private:
    /// We don't want to have to write Wrap<ITEM> all the time, so we're renaming it.
@@ -69,6 +126,8 @@ private:
          : _next(nextNode), _item(item), _hash(hash) {}
    };
 
+//------------------------------------------------------------------------------
+// Iterators
 public:
    /// Iterates through elements in a HashSet.
    class ConstIterator {
@@ -92,16 +151,16 @@ public:
    class Iterator : public ConstIterator {
    public:
       Iterator (HashSet& hashSet): ConstIterator(hashSet) {} ///< Constructor.
-      typename W::Ref  ref  () const { return this->_currentNode->_item.ref(); }
-      typename W::Ptr  ptr  () const { return this->_currentNode->_item.ptr(); }
+      typename W::Ref ref () const { return const_cast<HashNode*>(this->_currentNode)->_item.ref(); }
+      typename W::Ptr ptr () const { return const_cast<HashNode*>(this->_currentNode)->_item.ptr(); }
       /// Makes the Iterator point to the next ITEM in the HashSet.
-      Iterator& operator++ () {ConstIterator::operator++(); return *this;}
+      Iterator& operator++ () { ConstIterator::operator++(); return *this; }
    };
 
-
+//------------------------------------------------------------------------------
 // Member Data
 private:
-   MemoryPool* _pool;  ///< memory pool where HashNodes live
+   MPW<POOL> _pool;    ///< memory pool where HashNodes live
    HashNode** _bin;    ///< array of bins
    unsigned _bins;     ///< The length of the _bin array. Always a power of 2.
    unsigned _size;     ///< number of items in the HashSet
@@ -109,6 +168,7 @@ private:
    unsigned _trigger;  ///< hash map doubles in size when _size > _trigger
    unsigned _maxNodes; ///< largest number of HashNodes in one bin
 
+//------------------------------------------------------------------------------
 // Interface
 public:
    HashSet (unsigned initialBins, unsigned initialTrigger = 0);
@@ -123,7 +183,8 @@ public:
    template<class KEY> typename W::Ptr  find (KEY const& key) {
       return const_cast<ITEM*>(const_cast<HashSet const*>(this)->find(key));
    }
-   // Note: there is currently no delete function.
+   // Note: remove can only be called with MemoryPoolF (MemoryPool will not work)
+   template<class KEY> bool remove (KEY const& key);
    
    void clear ();          ///< Clears all ITEMs from the HashSet, without changing the number of bins.
 
@@ -165,15 +226,16 @@ private:
  * allowed in the HashSet before it resizes itself. If no initialTrigger is
  * supplied, the HashSet will set it equal to initialBins by default.
  */
-template<class ITEM>
-HashSet<ITEM>::HashSet(unsigned initialBins, unsigned initialTrigger)
+template<class ITEM, class POOL>
+HashSet<ITEM, POOL>::HashSet(unsigned initialBins, unsigned initialTrigger)
    : _size(0), _maxNodes(0)
 {
    // _bins cannot be zero because then the first add with fail
    _bins = initialBins ? initialBins : 2;
    // The pointers are the largest members of HashNode, so we want to align to these.
    // This should ensure proper alignment on both 32 and 64 bit systems.
-   _pool = new MemoryPool(_bins * sizeof(HashNode), sizeof(HashNode*));
+   _pool.construct(sizeof(HashNode), sizeof(HashNode*), _bins);
+   //_pool = new MemoryPool(_bins * sizeof(HashNode), sizeof(HashNode*));
 
    // if _bins is not a nonzero power of 2, round it up to one
    if (_bins & (_bins-1)) {
@@ -197,11 +259,12 @@ HashSet<ITEM>::HashSet(unsigned initialBins, unsigned initialTrigger)
 
 //------------------------------------------------------------------------------
 // destructor
-template<class ITEM>
-inline HashSet<ITEM>::~HashSet ()
+template<class ITEM, class POOL>
+inline HashSet<ITEM, POOL>::~HashSet ()
 {
    free(_bin);
-   delete _pool;
+   // pool is implicitly deleted by deletion of MPW<POOL>
+   //delete _pool;
 }
 
 //------------------------------------------------------------------------------
@@ -211,11 +274,11 @@ inline HashSet<ITEM>::~HashSet ()
  * This means that it unnecessarily checks if these ITEMs are already in
  * the set being copied to. A private addNew method would be faster.
  */
-template<class ITEM>
-HashSet<ITEM>& HashSet<ITEM>::operator= (HashSet<ITEM> const& hashSet)
+template<class ITEM, class POOL>
+HashSet<ITEM, POOL>& HashSet<ITEM, POOL>::operator= (HashSet<ITEM, POOL> const& hashSet)
 {
    if (_bins != hashSet._bins) {
-      _pool->donate(_bin, _bins * sizeof(HashNode*));
+      _pool.donate(_bin, _bins * sizeof(HashNode*));
       _bin = (HashNode**) calloc(hashSet._bins, sizeof(HashNode*));
       _bins = hashSet._bins;
       _mask = hashSet._mask;
@@ -223,7 +286,7 @@ HashSet<ITEM>& HashSet<ITEM>::operator= (HashSet<ITEM> const& hashSet)
       std::memset(_bin, 0, _bins*sizeof(HashNode*));
    }
    _trigger = hashSet._trigger;
-   _pool->clear();
+   _pool.clear();
    _size = 0;
    
    for (typename HashSet::Iterator itr(hashSet); itr; ++itr) {
@@ -235,8 +298,8 @@ HashSet<ITEM>& HashSet<ITEM>::operator= (HashSet<ITEM> const& hashSet)
 
 //------------------------------------------------------------------------------
 // Adds a new item. If the item is already in the HashSet, it returns a reference to the existing item.
-template<class ITEM>
-typename Wrap<ITEM>::Ref HashSet<ITEM>::add (typename W::Ex item)
+template<class ITEM, class POOL>
+typename Wrap<ITEM>::Ref HashSet<ITEM, POOL>::add (typename W::Ex item)
 {
    // figure out where it should go
    unsigned hash = cref(item).hash();
@@ -264,7 +327,7 @@ typename Wrap<ITEM>::Ref HashSet<ITEM>::add (typename W::Ex item)
    }
    
    // add a new HashNode
-   _bin[binNumber] = new(_pool->alloc(sizeof(HashNode))) HashNode(_bin[binNumber], item, hash);
+   _bin[binNumber] = new(_pool.alloc()) HashNode(_bin[binNumber], item, hash);
    return _bin[binNumber]->_item.ref();
 }
 
@@ -276,13 +339,13 @@ typename Wrap<ITEM>::Ref HashSet<ITEM>::add (typename W::Ex item)
  * 1) properly defines unsigned KEY::hash() const
  * 2) can be compared to an ITEM using ITEM == KEY
  */
-template<class ITEM>
+template<class ITEM, class POOL>
 template<class KEY>
-typename Wrap<ITEM>::CPtr HashSet<ITEM>::find (KEY const& key) const
+typename Wrap<ITEM>::CPtr HashSet<ITEM, POOL>::find (KEY const& key) const
 {
    unsigned hash = cref(key).hash();
    HashNode* node = _bin[hash & _mask];
-   while(node) {
+   while (node) {
       if (node->_hash == hash and node->_item.cref() == cref(key)) {
          return node->_item.ptr();
       }
@@ -292,19 +355,43 @@ typename Wrap<ITEM>::CPtr HashSet<ITEM>::find (KEY const& key) const
 }
 
 //------------------------------------------------------------------------------
+template<class ITEM, class POOL>
+template<class KEY>
+bool HashSet<ITEM, POOL>::remove (KEY const& key) {
+   unsigned hash = cref(key).hash();
+   HashNode* node = _bin[hash & _mask];
+   if (node->_hash == hash and node->_item.cref() == cref(key)) {
+      _bin[hash & _mask] = node->_next;
+      _pool.free(node);
+      return true;
+   }
+   HashNode* nextnode = node->_next;
+   while (nextnode) {
+      if (nextnode->_hash == hash and nextnode->_item.cref() == cref(key)) {
+         node->_next = nextnode->_next;
+         _pool.free(nextnode);
+         return true;
+      }
+      node = nextnode;
+      nextnode = nextnode->_next;
+   }
+   return false;
+}
+
+//------------------------------------------------------------------------------
 // Clears all ITEMs from the HashSet, without changing the number of bins.
-template<class ITEM>
-void HashSet<ITEM>::clear ()
+template<class ITEM, class POOL>
+void HashSet<ITEM, POOL>::clear ()
 {
    std::memset(_bin, 0, _bins*sizeof(HashNode*));
-   _pool->clear();
+   _pool.clear();
    _size = 0;
 }
 
 //------------------------------------------------------------------------------
 // Returns the number of items in the HashSet.
-template<class ITEM>
-inline unsigned HashSet<ITEM>::size () const
+template<class ITEM, class POOL>
+inline unsigned HashSet<ITEM, POOL>::size () const
 {
    return _size;
 }
@@ -314,8 +401,8 @@ inline unsigned HashSet<ITEM>::size () const
 /**
  * The iterator will not always point to the same ITEM initially.
  */
-template<class ITEM>
-typename HashSet<ITEM>::Iterator HashSet<ITEM>::iterator ()
+template<class ITEM, class POOL>
+typename HashSet<ITEM, POOL>::Iterator HashSet<ITEM, POOL>::iterator ()
 {
    return Iterator(*this);
 }
@@ -325,8 +412,8 @@ typename HashSet<ITEM>::Iterator HashSet<ITEM>::iterator ()
 /**
  * The iterator will not always point to the same ITEM initially.
  */
-template<class ITEM>
-typename HashSet<ITEM>::ConstIterator HashSet<ITEM>::constIterator () const
+template<class ITEM, class POOL>
+typename HashSet<ITEM, POOL>::ConstIterator HashSet<ITEM, POOL>::constIterator () const
 {
    return ConstIterator(*this);
 }
@@ -334,8 +421,8 @@ typename HashSet<ITEM>::ConstIterator HashSet<ITEM>::constIterator () const
 
 //------------------------------------------------------------------------------
 // printing function for debugging
-template<class ITEM>
-void HashSet<ITEM>::print () const
+template<class ITEM, class POOL>
+void HashSet<ITEM, POOL>::print () const
 {
    for (unsigned i=0; i<_bins; ++i) {
       HashNode* node = _bin[i];
@@ -358,8 +445,8 @@ void HashSet<ITEM>::print () const
 
 //------------------------------------------------------------------------------
 // Doubles the length of _bin (and thus the functional capacity of the HashSet).
-template<class ITEM>
-void HashSet<ITEM>::resize()
+template<class ITEM, class POOL>
+void HashSet<ITEM, POOL>::resize()
 {
    unsigned newbins = _bins << 1;
    HashNode** newbin = (HashNode**) malloc(newbins * sizeof(HashNode*));
@@ -391,7 +478,7 @@ void HashSet<ITEM>::resize()
       low->_next  = 0;
    }
 
-   _pool->donate(_bin, sizeof(HashNode*) * _bins);
+   _pool.donate(_bin, sizeof(HashNode*) * _bins);
    _bin = newbin;
    _bins = newbins;
    _mask = _bins-1;
@@ -423,8 +510,8 @@ void HashSet<ITEM>::resize()
 
 //------------------------------------------------------------------------------
 // Constructor
-template<class ITEM>
-HashSet<ITEM>::ConstIterator::ConstIterator (HashSet const& hashSet)
+template<class ITEM, class POOL>
+HashSet<ITEM, POOL>::ConstIterator::ConstIterator (HashSet const& hashSet)
 : _hashSet(&hashSet), _currentBin(0), _currentNode(0)
 {
    findNextUsedBin();
@@ -434,8 +521,8 @@ HashSet<ITEM>::ConstIterator::ConstIterator (HashSet const& hashSet)
 
 //------------------------------------------------------------------------------
 // Makes the Iterator point to the next ITEM in the HashSet.
-template<class ITEM>
-typename HashSet<ITEM>::ConstIterator& HashSet<ITEM>::ConstIterator::operator++ ()
+template<class ITEM, class POOL>
+typename HashSet<ITEM, POOL>::ConstIterator& HashSet<ITEM, POOL>::ConstIterator::operator++ ()
 {
    if (_currentNode->_next) {
       _currentNode = _currentNode->_next;
@@ -456,8 +543,8 @@ typename HashSet<ITEM>::ConstIterator& HashSet<ITEM>::ConstIterator::operator++ 
 /**
  *If there are no more nonempty bins, _currentBin will be equal to _hashSet->_bins.
  */
-template<class ITEM>
-void HashSet<ITEM>::ConstIterator::findNextUsedBin ()
+template<class ITEM, class POOL>
+void HashSet<ITEM, POOL>::ConstIterator::findNextUsedBin ()
 {
    while ( (_currentBin < _hashSet->_bins) and !(_hashSet->_bin[_currentBin]) )
       ++_currentBin;

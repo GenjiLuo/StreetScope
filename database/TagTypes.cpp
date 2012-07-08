@@ -51,20 +51,20 @@ void TagSet::leakTag (unsigned tagIndex) {
 */
 
 //------------------------------------------------------------------------------
-void TagSet::removeTag (TagID tagid) {
+void TagSet::leakTag (TagID tagid) {
    Iterator itr = iterator();
-   if (itr.cref().id() == tagid) {
-      removeFirst();
+   if (itr.cref().tagID() == tagid) {
+      leakFirst();
       return;
    }
    Iterator next = itr;
    ++next;
-   while (next.valid() and next.cref().id() != tagid) {
+   while (next.valid() and next.cref().tagID() != tagid) {
       ++itr;
       ++next;
    }
    if (next.valid())
-      removeNext(itr);
+      leakNext(itr);
 }
 
 //------------------------------------------------------------------------------

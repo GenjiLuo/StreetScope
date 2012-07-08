@@ -9,6 +9,11 @@ LFLAGS = -lcurl `Magick++-config --ldflags --libs`
 # convenience variables
 odir = bin
 libdir = lib
+estdlib = ../../estdlib
+eh = $(estdlib)/h
+ehpp = $(estdlib)/hpp
+einclude = -I$(eh) -I$(ehpp)
+
 
 bare_objects = Database.o DatabaseXML.o PugiXML.o GoogleMaps.o Location.o PhotoTypes.o TagTypes.o Polyline.o SimpleCharPool.o MemoryPool.o
 objects = $(patsubst %,$(odir)/%,$(bare_objects))
@@ -28,7 +33,7 @@ $(odir)/DatabaseXML.o : DatabaseXML.cpp DatabaseXML.h Database.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(odir)/PugiXML.o : pugixml.cpp pugixml.hpp pugiconfig.hpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $< $(INCLUDES)
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(odir)/GoogleMaps.o : GoogleMaps.cpp GoogleMaps.h Database.h Polyline.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $< `Magick++-config --cppflags --cxxflags`

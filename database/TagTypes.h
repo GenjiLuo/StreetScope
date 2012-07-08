@@ -7,7 +7,7 @@
 #define TAG_TYPES
 
 #include <time.h>
-#include "HashFunctions.h"
+#include "MemoryPoolF.h"
 #include "LinkedList.hpp"
 #include "SimpleCharPool.h"
 
@@ -30,7 +30,7 @@ public:
    TagID (unsigned id): _id(id) {}
 
    unsigned u32 () const { return _id; }
-   inline unsigned hash () const { return hash1(_id); }
+   unsigned hash () const { return _id; }
 
    bool operator== (TagID tagid) const { return _id == tagid._id; }
    bool operator!= (TagID tagid) const { return _id != tagid._id; }
@@ -92,20 +92,22 @@ class TagSet : public LinkedList<Tag> {
 public:
    TagSet () {}
    
-   void add (MemoryPool& pool, TagID tagid, Target target, Angle t1, Angle p1, Angle t2, Angle p2) {
-      Link* newlink = static_cast<Link*> (pool.alloc(sizeof(Link)));
+   void add (MemoryPoolF& pool, TagID tagid, Target target, Angle t1, Angle p1, Angle t2, Angle p2) {
+      Link* newlink = static_cast<Link*> (pool.alloc());
       new(&newlink->_item) Tag(tagid, target, t1, p1, t2, p2);
       addLink(newlink);
    }
    
-   void add (MemoryPool& pool, Tag const& tag) { LinkedList<Tag>::add(tag, pool); }
+   //void add (MemoryPool& pool, Tag const& tag) { LinkedList<Tag>::add(tag, pool); }
 
    // temp - used to get around inability of my MemoryPool to be free()
+   /*
    void add (TagID tagid, Target target, Angle t1, Angle p1, Angle t2, Angle p2) {
       Link* newlink = new Link;
       new(&newlink->_item) Tag(tagid, target, t1, p1, t2, p2);
       addLink(newlink);
    }
+   */
 
    TagSet::Iterator getTag (TagID tagid);
    
@@ -113,7 +115,7 @@ public:
    void leakAllTags ();
    void leakTag (unsigned tagIndex);
    */
-   void removeTag (TagID tagid);
+   void leakTag (TagID tagid);
 };
 
 

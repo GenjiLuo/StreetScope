@@ -25,7 +25,16 @@ PhotoDatabase::PhotoDatabase (unsigned initialCapacity)
   _epanoids(initialCapacity<<5),        // roughly 2 edges per photo
 //  _tagTargets(256)                      // completely arbitrary:
   _lastPanoid(0)
-{ }
+{
+   _tagPool.setItemSize(sizeof(LinkedList<Tag>::Link);
+   _tagPool.setMinFree(1);
+   _tagPool.setNextBlockSize(initialCapacity);
+   _tagPool.setMinDonationSize(64);
+   _edgePool.setItemSize(sizeof(LinkedList<Edge>::Link);
+   _edgePool.setMinFree(1);
+   _edgePool.setNextBlockSize(initialCapacity);
+   _edgePool.setMinDonationSize(64);
+}
 
 //------------------------------------------------------------------------------
 void PhotoDatabase::setRootDir (std::string rootDir) {
@@ -110,7 +119,7 @@ PhotoMetadata* PhotoDatabase::addNewMetaData (Location const& l,
 //------------------------------------------------------------------------------
 void PhotoDatabase::addEdge (PhotoMetadata* md, Angle angle, char const* panoid) {
    CharPoolIndex pid = _epanoids.addString(panoid);
-   md->edges().add(_tagpool, angle, pid);
+   md->edges().add(_edgepool, angle, pid);
 }
 
 //------------------------------------------------------------------------------
@@ -134,12 +143,20 @@ bool PhotoDatabase::findByPanoId (Location const& l, char const* panoid) const {
 
 //------------------------------------------------------------------------------
 bool PhotoDatabase::saveDatabase () const {
-   // Save Metadata
+   // open file
    string fmetadata = _rootDir + "metadata/metadata.bin";
    cout << "Saving metadata to " << fmetadata << '.' << '\n';
    ofstream file(fmetadata.c_str(), ios_base::binary | ios_base::out | ios_base::trunc);
    if (!file.good())
       return false;
+
+   // save _rand state
+   unsigned x, y;
+   _rand.state(x, y);
+   file.write(reinterpret_cast<char*>(&x), sizeof(unsigned));
+   file.write(reinterpret_cast<char*>(&y), sizeof(unsigned));
+
+   // save metadata
    HashSet<PhotoMetadata>::ConstIterator itr = _metadata.constIterator();
    for ( ; itr.valid(); ++itr) {
       itr.cref().save(file);
@@ -167,7 +184,7 @@ bool PhotoDatabase::saveDatabase () const {
 
 //------------------------------------------------------------------------------
 bool PhotoDatabase::loadDatabase () {
-   // Load Metadata
+   // open file
    string fmetadata = _rootDir + "metadata/metadata.bin";
    cout << "Loading metadata from " << fmetadata << '.' << '\n';
    ifstream file(fmetadata.c_str(), ios_base::binary | ios_base::in);
@@ -175,6 +192,13 @@ bool PhotoDatabase::loadDatabase () {
       cout << "Couldn't load metadata!\n";
       return false;
    }
+
+   // load _rand state
+   unsigned x, y;
+   file.read(reinterpret_cast<char*>(&x), sizeof(unsigned));
+   file.read(reinterpret_cast<char*>(&y), sizeof(unsigned));
+
+   // load metdata
    PhotoMetadata metadata;
    metadata.loadData(file);
    while (file.good()) {
@@ -213,6 +237,11 @@ bool PhotoDatabase::savePlaintext (char const* fname) const {
    ofstream file(filename.c_str(), ios_base::binary | ios_base::out | ios_base::trunc);
    if (!file.good())
       return false;
+
+   // save _rand state
+   unsigned x, y;
+   _rand.state(x, y);
+   file << "Random number generator state: " << x << ", " << y << '\n';
    
    // Save Metadata
    unsigned entries = 0;
@@ -266,26 +295,36 @@ bool PhotoDatabase::savePlaintext (char const* fname) const {
 }
 
 //------------------------------------------------------------------------------
+TagID PhotoDatabase::newTagID () {
+   unsigned newid;
+   do {
+      newid = _rand.u32();
+   } while (_tagkeys.find(TagID(newid)));
+   return TagID(newid);
+}
+
+//------------------------------------------------------------------------------
 bool PhotoDatabase::addTag (PhotoID photoid, Target target, Angle theta1, Angle phi1, Angle theta2, Angle phi2) {
    PhotoMetadata* photo = _metadata.find(photoid);
    if (!photo)
       return false;
-   //photo->tags().add(_tagpool, target, theta1, phi1, theta2, phi2);
-   // temp - MemoryPool
-   photo->tags().add(_tags++, target, theta1, phi1, theta2, phi2);
+   photo->tags().add(_tagpool, newTagID(), target, theta1, phi1, theta2, phi2);
    return true;
 }
 
 //------------------------------------------------------------------------------
-bool PhotoDatabase::removeTag (PhotoID photoid, TagID tagid) {
-   PhotoMetadata* photo = _metadata.find(photoid);
-   if (!photo)
+bool PhotoDatabase::removeTag (TagID tagid) {
+   // ensure said tag exists and remove from _tagkeys
+   TagKey* tagkey = _tagkeys.find(tagid);
+   if (!tagkey)
       return false;
-   TagSet::Iterator tag = photo->tags().getTag(tagid);
-   if (!tag.valid())
-      return false;
-      
-   photo->tags().removeTag(tagid);
+   _tagkeys.remove(tagid);
+
+   // remove from metadata listing
+   TagSet& tagset = _metadata.find(tagkey->photoID())->tags();
+   TagSet::Iterator tagitr = tagset.get(tagid);
+   tagset.leakTag(tagid);
+   _tagpool.free(tagitr.ptr());
    return true;
 }
 

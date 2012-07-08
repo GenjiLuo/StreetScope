@@ -11,11 +11,16 @@
 #include "TagTypes.h" // already included by PhotoTypes.h
 #include "Location.h"
 #include "QTree.hpp"
-#include "HashSet.hpp"
-#include "MemoryPool.h"
+#include "Random.h"
+//#include "MemoryPool.h"
 #include "SimpleCharPool.h"
 #include "LinkedList.hpp"
 
+// estdlib
+#include "HashSet.hpp"
+#include "MemoryPoolF.h"
+
+// debug
 #include <iostream>
 
 
@@ -27,10 +32,11 @@ class PhotoDatabase {
 //private:
 public:
    QTree<PhotoKey, 2> _photokeys;    // allows quick lookup of photos by Location
-   HashSet<PhotoMetadata> _metadata; // stores all the metadata
-   // Note: this MemoryPool should hold all Tags and Edges.
-   // For now it will only hold edges, because we must be able to delete Tags.
-   MemoryPool _tagpool;              // holds all the Tag objects and Edge objects
+   HashSet<PhotoMetadata, MemoryPoolF> _metadata; // stores all the metadata
+   HashSet<TagKey, MemoryPoolF> _tagkeys;         // allows lookup of tag regardless of photo
+   MemoryPoolF _tagpool;             // shared by all TagSets
+   MemoryPoolF _edgepool;            // shared by all EdgeSets
+   XorShift32 _rand;                 // generates ids
    unsigned _tags;                   // total number of tags
    SimpleCharPool _panoids;          // panoids of images from Google Street View
    SimpleCharPool _epanoids;         // panoids of edges
@@ -49,6 +55,7 @@ public:
    // Include the trailing '/' character!
    void setRootDir (std::string rootDir);
    void setPanoDir (std::string panoDir);
+   void setRandState (unsigned x, unsigned y) { _rand.setState(x, y); }
 
    // Accessor Methods
    unsigned size () const { return _photokeys.size(); }
@@ -108,6 +115,8 @@ public:
    // Finds a specific tag on a specific photo
    inline Tag* getTag (PhotoID photoid, TagID tagid);
    
+   // generates a new (as of yet unused tag id)
+   TagID newTagID ();
    // Adds a new tag to a photo
    bool addTag (PhotoID photoid, Target target, Angle theta1, Angle phi1, Angle theta2, Angle phi2);
    

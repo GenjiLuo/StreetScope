@@ -1,13 +1,13 @@
 //==============================================================================
 // LinkedList.hpp
-// Created 1/28/12.
+// Created January 28, 2012
 //==============================================================================
 
 #ifndef LINKED_LIST_HPP
 #define LINKED_LIST_HPP
 
 #include "Wrap.hpp"
-#include "MemoryPool.h"
+#include "MemoryPoolF.h"
 
 #include <iostream>
 
@@ -25,7 +25,7 @@ public:
       Link () {}
       Link (Link* next, typename Wrap<ITEM>::Ex item): _next(next), _item(item) {}
    };
-   
+
 // Iterators
 public:
    class Iterator {
@@ -73,7 +73,7 @@ public:
    LinkedList (): _first(0), _items(0) {}
 
    // Destructor
-   ~LinkedList ();
+   ~LinkedList () { removeAll(); }
 
    // Returns the number of items in the LinkedList.
    unsigned items () const { return _items; }
@@ -86,12 +86,14 @@ public:
    
    // Adds an ITEM
    inline void add (typename Wrap<ITEM>::Ex item);
-   // Adds an ITEM, using the provided MemoryPool as an allocator.
-   inline void add (typename Wrap<ITEM>::Ex item, MemoryPool& pool);
+   // Adds an ITEM, using the provided MemoryPoolF as an allocator.
+   inline void add (typename Wrap<ITEM>::Ex item, MemoryPoolF& pool);
+protected:
    // Adds a Link that you have constructed yourself.
    inline void addLink (Link* link);
 
-   // Note: do not use any of these methods within a MemoryPool!
+public:
+   // Note: do not use any of these methods within a MemoryPoolF!
    // Removes the link following parent.
    inline typename Wrap<ITEM>::T removeNext (Link* parent);
    inline typename Wrap<ITEM>::T removeNext (Iterator const& itr) { return removeNext(itr.current()); }
@@ -115,19 +117,6 @@ public:
 //==============================================================================
 
 //------------------------------------------------------------------------------
-// Destructor
-template<typename ITEM>
-LinkedList<ITEM>::~LinkedList () {
-   Link* kill = _first;
-   Link* temp;
-   while (kill) {
-      temp = kill->_next;
-      delete kill;
-      kill = temp;
-   }
-}
-
-//------------------------------------------------------------------------------
 // Adds an ITEM
 template<typename ITEM>
 void LinkedList<ITEM>::add (typename Wrap<ITEM>::Ex item) {
@@ -136,9 +125,9 @@ void LinkedList<ITEM>::add (typename Wrap<ITEM>::Ex item) {
 }
 
 //------------------------------------------------------------------------------
-// Adds an ITEM, using the provided MemoryPool as an allocator.
+// Adds an ITEM, using the provided MemoryPoolF as an allocator.
 template<typename ITEM>
-void LinkedList<ITEM>::add (typename Wrap<ITEM>::Ex item, MemoryPool& pool) {
+void LinkedList<ITEM>::add (typename Wrap<ITEM>::Ex item, MemoryPoolF& pool) {
    _first = new(pool.alloc(sizeof(Link))) Link(_first, item);
    ++_items;
 }
@@ -186,7 +175,7 @@ void LinkedList<ITEM>::removeAll () {
 
 //------------------------------------------------------------------------------
 // Leaks the link following parent, but doesn't delete it.
-// This causes a memory leak, unless everything is in a MemoryPool.
+// This causes a memory leak, unless everything is in a MemoryPoolF.
 template<typename ITEM>
 void LinkedList<ITEM>::leakNext (Link* parent) {
    parent->_next = parent->_next->_next;

@@ -71,23 +71,6 @@ std::ostream& PhotoMetadata::save (std::ostream& os) const {
 }
 
 //------------------------------------------------------------------------------
-//std::istream& PhotoMetadata::load (std::istream& is, MemoryPool& pool) {
-//   // Read plain old data
-//   //   is.read(reinterpret_cast<char*>(this), sizeof(PhotoMetadata));
-//   is.read(reinterpret_cast<char*>(this), sizeof(PhotoMetadata) - sizeof(TagSet));
-//   
-//   // Read tags
-//   unsigned items;
-//   Tag tag;
-//   is.read(reinterpret_cast<char*>(&items), sizeof(unsigned));
-//   for (unsigned i=0; i<items; ++i) {
-//      is.read(reinterpret_cast<char*>(&tag), sizeof(Tag));
-//      _tags.add(pool, tag);
-//   }
-//   return is;
-//}
-
-//------------------------------------------------------------------------------
 std::istream& PhotoMetadata::loadData (std::istream& is) {
    // Read plain old data
    is.read(reinterpret_cast<char*>(this), dataSize());
@@ -95,7 +78,7 @@ std::istream& PhotoMetadata::loadData (std::istream& is) {
 }
 
 //------------------------------------------------------------------------------
-unsigned PhotoMetadata::loadTags (std::istream& is, MemoryPool& pool) {
+unsigned PhotoMetadata::loadTags (std::istream& is, MemoryPoolF& pool) {
    // Read tags
    unsigned items;
    Tag tag;
@@ -108,7 +91,7 @@ unsigned PhotoMetadata::loadTags (std::istream& is, MemoryPool& pool) {
 }
 
 //------------------------------------------------------------------------------
-std::istream& PhotoMetadata::loadEdges (std::istream& is, MemoryPool& pool) {
+std::istream& PhotoMetadata::loadEdges (std::istream& is, MemoryPoolF& pool) {
    // Read tags
    unsigned edges;
    Edge edge;
