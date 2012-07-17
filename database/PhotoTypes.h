@@ -30,14 +30,14 @@ public:
    PhotoID () {}
    PhotoID (unsigned id): _id(id) {}
 
-   unsigned asUnsigned () const { return _id; }
+   unsigned u32 () const { return _id; }
    inline unsigned hash () const { return hash1(_id); }
 
    bool operator== (PhotoID photoid) const { return _id == photoid._id; }
 };
 
 inline std::ostream& operator<< (std::ostream& os, PhotoID photoid) {
-   return os << photoid.asUnsigned();
+   return os << photoid.u32();
 }
 
 

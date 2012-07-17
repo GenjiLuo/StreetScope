@@ -30,15 +30,6 @@ public:
    pugi::xml_node& photoMetadataXML (pugi::xml_node& node, LinkedList<PhotoKey> const* keys);
 };
 
-//------------------------------------------------------------------------------
-/*
-struct PhotoMetadataXML {
-   PhotoMetadata const& md;
-   PhotoMetadataXML(PhotoMetadata const& photomd): md(photomd) {}
-};
-std::ostream& operator<< (std::ostream& os, PhotoMetadataXML& p);
-*/
-
 
 #endif // DATABASE_XML
 

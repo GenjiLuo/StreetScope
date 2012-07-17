@@ -1,6 +1,6 @@
 //==============================================================================
 // GoogleMaps.h
-// Created 2/10/12.
+// Created February 10 2012
 //==============================================================================
 
 #ifndef GOOGLE_MAPS
@@ -113,11 +113,11 @@ public:
    // Extracts panorama metadata from _textBuffer.
    bool read_sv_xml (Panorama& panorama);
 
-   // Downloads a panorama and saves it to the database.
+   // Downloads a panorama and saves it to the database. (Called by savePano(Panorama const&).)
    PhotoMetadata* downloadPano (Panorama const& panorama, unsigned zoom);
-   // Saves a panorama in the database.
+   // Saves a panorama in the database. (Called in downloadRoute.)
    PhotoMetadata* savePano (Panorama const& panorama);
-   // Saves a panorama in the database.
+   // Saves a panorama in the database. (Used by the database server.)
    PhotoMetadata* savePano (char const* panoid, unsigned zoom);
 
    // Tries to find a driving route between source and destination.

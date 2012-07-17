@@ -24,7 +24,7 @@ int main (int argc, char * const argv[]) {
    
  
    
-   unsigned n = 100;
+   unsigned n = 10000;
    unsigned maxTagsPerPhoto = 3;
    DatabaseTester tester(n);
    tester.setRootDir("/home/erik/Code/streetview/database/data/");

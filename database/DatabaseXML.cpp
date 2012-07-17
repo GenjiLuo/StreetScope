@@ -59,7 +59,7 @@ xml_node& DatabaseXML::edgeXML (xml_node& node, Edge const& edge) {
 //------------------------------------------------------------------------------
 xml_node& DatabaseXML::photoMetadataXML (xml_node& node, PhotoMetadata const& pmd) {
    xml_node n = node.append_child("PhotoMetadata");
-   n.append_attribute("id") = pmd.id().asUnsigned();
+   n.append_attribute("id") = pmd.id().u32();
    n.append_attribute("pano_id") = _db._panoids.getString(pmd.panoid());
 
    timestampXML(n, pmd.timestamp(), "Timestamp");
