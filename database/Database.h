@@ -34,8 +34,8 @@ public:
    QTree<PhotoKey, 2> _photokeys;    // allows quick lookup of photos by Location
    HashSet<PhotoMetadata, MemoryPoolF> _metadata; // stores all the metadata
    HashSet<TagKey, MemoryPoolF> _tagkeys;         // allows lookup of tag regardless of photo
-   MemoryPoolF _tagpool;             // shared by all TagSets
-   MemoryPoolF _edgepool;            // shared by all EdgeSets
+   MemoryPoolF _tagpool;             // shared by all TagSets (used by their linked lists)
+   MemoryPoolF _edgepool;            // shared by all EdgeSets (used by their linked lists)
    XorShift32 _rand;                 // generates ids
    unsigned _tags;                   // total number of tags
    SimpleCharPool _panoids;          // panoids of images from Google Street View
@@ -127,7 +127,7 @@ public:
    //inline void leakTag (PhotoID photoid, unsigned tagIndex);
 
    // Removes a tag - should be updated to use MemoryPool!
-   bool removeTag (PhotoID photoid, TagID tagid);
+   bool removeTag (TagID tagid);
 };
 
 

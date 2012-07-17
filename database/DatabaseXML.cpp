@@ -39,7 +39,7 @@ xml_node& DatabaseXML::locationXML (xml_node& node, Location const& l, char cons
 //------------------------------------------------------------------------------
 xml_node& DatabaseXML::tagXML (xml_node& node, Tag const& tag) {
    xml_node tagnode = node.append_child("Tag");
-   tagnode.append_attribute("id") = tag.id().u32();
+   tagnode.append_attribute("id") = tag.tagID().u32();
    tagnode.append_attribute("target") = tag.target();
    tagnode.append_attribute("theta1") = tag.theta1();
    tagnode.append_attribute("phi1")   = tag.phi1();

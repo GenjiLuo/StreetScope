@@ -128,7 +128,7 @@ void LinkedList<ITEM>::add (typename Wrap<ITEM>::Ex item) {
 // Adds an ITEM, using the provided MemoryPoolF as an allocator.
 template<typename ITEM>
 void LinkedList<ITEM>::add (typename Wrap<ITEM>::Ex item, MemoryPoolF& pool) {
-   _first = new(pool.alloc(sizeof(Link))) Link(_first, item);
+   _first = new(pool.alloc()) Link(_first, item);
    ++_items;
 }
 

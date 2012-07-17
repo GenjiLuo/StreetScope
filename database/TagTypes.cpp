@@ -28,7 +28,7 @@ void Tag::setArea (Angle theta1, Angle phi1, Angle theta2, Angle phi2) {
 //------------------------------------------------------------------------------
 TagSet::Iterator TagSet::getTag (TagID tagid) {
    Iterator itr = iterator();
-   while (itr.valid() and itr.cref().id() != tagid) {
+   while (itr.valid() and itr.cref().tagID() != tagid) {
       ++itr;
    }
    // Iterator may be valid or not

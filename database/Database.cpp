@@ -19,21 +19,21 @@ using namespace std;
 PhotoDatabase::PhotoDatabase (unsigned initialCapacity)
 : _photokeys(initialCapacity),          // exactly one PhotoKey per photo
   _metadata(initialCapacity),           // exactly one PhotoMetadata per photo
-  _tagpool(initialCapacity * sizeof(Tag)), // approx 1 tag per photo (is this right?)
+  _tagkeys(initialCapacity),            // approx 1 tag per photo (is this right?)
   _tags(0),
   _panoids(initialCapacity<<4),         // roughly 16 characters per id (per photo)
   _epanoids(initialCapacity<<5),        // roughly 2 edges per photo
 //  _tagTargets(256)                      // completely arbitrary:
   _lastPanoid(0)
 {
-   _tagPool.setItemSize(sizeof(LinkedList<Tag>::Link);
-   _tagPool.setMinFree(1);
-   _tagPool.setNextBlockSize(initialCapacity);
-   _tagPool.setMinDonationSize(64);
-   _edgePool.setItemSize(sizeof(LinkedList<Edge>::Link);
-   _edgePool.setMinFree(1);
-   _edgePool.setNextBlockSize(initialCapacity);
-   _edgePool.setMinDonationSize(64);
+   _tagpool.setItemSize(sizeof(LinkedList<Tag>::Link));
+   _tagpool.setMinFree(1);
+   _tagpool.setNextBlockSize(initialCapacity);
+   _tagpool.setMinDonationSize(64);
+   _edgepool.setItemSize(sizeof(LinkedList<Edge>::Link));
+   _edgepool.setMinFree(1);
+   _edgepool.setNextBlockSize(initialCapacity);
+   _edgepool.setMinDonationSize(64);
 }
 
 //------------------------------------------------------------------------------
@@ -157,7 +157,7 @@ bool PhotoDatabase::saveDatabase () const {
    file.write(reinterpret_cast<char*>(&y), sizeof(unsigned));
 
    // save metadata
-   HashSet<PhotoMetadata>::ConstIterator itr = _metadata.constIterator();
+   HashSet<PhotoMetadata, MemoryPoolF>::ConstIterator itr = _metadata.constIterator();
    for ( ; itr.valid(); ++itr) {
       itr.cref().save(file);
    }
@@ -242,10 +242,11 @@ bool PhotoDatabase::savePlaintext (char const* fname) const {
    unsigned x, y;
    _rand.state(x, y);
    file << "Random number generator state: " << x << ", " << y << '\n';
+   file << '\n';
    
    // Save Metadata
    unsigned entries = 0;
-   HashSet<PhotoMetadata>::ConstIterator itr = _metadata.constIterator();
+   HashSet<PhotoMetadata, MemoryPoolF>::ConstIterator itr = _metadata.constIterator();
    LinkedList<Tag>::ConstIterator tagitr;
    LinkedList<Edge>::ConstIterator eitr;
    for ( ; itr.valid(); ++itr) {
@@ -264,7 +265,7 @@ bool PhotoDatabase::savePlaintext (char const* fname) const {
          for (tagitr = itr.cref().tags().constIterator(); tagitr.valid(); ++tagitr) {
             Tag const& tag = tagitr.cref();
             file << "Tag " << i++ << ":\n";
-            file << "   Id:         " << tag.id()                       << '\n';
+            file << "   Id:         " << tag.tagID()                    << '\n';
             file << "   Target:     " << tag.target()                   << '\n';
             file << "   Timestamp:  " << ctime(tag.timestamp());
             file << "   Theta Low:  " << tag.theta1()                   << '\n';
@@ -322,7 +323,7 @@ bool PhotoDatabase::removeTag (TagID tagid) {
 
    // remove from metadata listing
    TagSet& tagset = _metadata.find(tagkey->photoID())->tags();
-   TagSet::Iterator tagitr = tagset.get(tagid);
+   TagSet::Iterator tagitr = tagset.getTag(tagid);
    tagset.leakTag(tagid);
    _tagpool.free(tagitr.ptr());
    return true;

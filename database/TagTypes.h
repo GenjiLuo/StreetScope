@@ -76,7 +76,7 @@ public:
    Tag (TagID tagid, Target target, Angle t1, Angle p1, Angle t2, Angle p2);
    void setArea (Angle theta1, Angle phi1, Angle theta2, Angle phi2);
    
-   TagID id () const { return _id; }
+   TagID tagID () const { return _id; }
    Target   target () const { return _target; }
    time_t const* timestamp () const { return &_timestamp; }
    Angle theta1   () const { return _theta1; }
@@ -98,7 +98,8 @@ public:
       addLink(newlink);
    }
    
-   //void add (MemoryPool& pool, Tag const& tag) { LinkedList<Tag>::add(tag, pool); }
+   // called by PhotoMetadata::loadTags
+   void add (MemoryPoolF& pool, Tag const& tag) { LinkedList<Tag>::add(tag, pool); }
 
    // temp - used to get around inability of my MemoryPool to be free()
    /*

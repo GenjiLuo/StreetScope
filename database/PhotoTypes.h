@@ -73,11 +73,13 @@ private:
    PhotoID _photoid;
 
 public:
-   TagKey (TagID _tagid, PhotoID _photoid): _tagid(tagid), _photoid(photoid) {};
+   TagKey (TagID tagid, PhotoID photoid): _tagid(tagid), _photoid(photoid) {};
    TagID tagID () const { return _tagid; }
    PhotoID photoID () const { return _photoid; }
    unsigned hash () const { return _tagid.hash(); }
-}
+};
+inline bool operator== (TagKey const& tagkey, TagID tagid) { return tagkey.tagID() == tagid; }
+inline bool operator== (TagID tagid, TagKey const& tagkey) { return tagkey.tagID() == tagid; }
 
 //------------------------------------------------------------------------------
 // Note: For now we are only using Google's panoids. We should be smarter and
@@ -100,7 +102,8 @@ public:
       new(&newlink->_item) Edge(angle, id);
       addLink(newlink);
    }
-   //void add (MemoryPoolF& pool, Edge const& edge) { LinkedList<Edge>::add(edge, pool); }
+   // called by PhotoMetadata::loadEdges
+   void add (MemoryPoolF& pool, Edge const& edge) { LinkedList<Edge>::add(edge, pool); }
 };
 
 //------------------------------------------------------------------------------

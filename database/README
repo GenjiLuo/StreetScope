@@ -1,8 +1,8 @@
 ========== June 2012 - streetview project database ==========
 
 Dependencies:
-libcurl
-ImageMagick++
+libcurl (libcurl4-openssl-dev)
+ImageMagick++ (libmagick++-dev)
 
 
 Building:
