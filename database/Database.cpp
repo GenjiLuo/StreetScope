@@ -102,8 +102,8 @@ PhotoMetadata* PhotoDatabase::addNewMetaData (Location const& l,
                                               Angle tiltYaw,
                                               Angle tiltPitch)
 {
-   // should move to random id allocation
-   unsigned id = this->size();
+   // generate new id
+   PhotoID id = newPhotoID();
 
    // should check for duplicates
    CharPoolIndex pid = _panoids.addString(panoid);
@@ -250,7 +250,7 @@ bool PhotoDatabase::savePlaintext (char const* fname) const {
    LinkedList<Tag>::ConstIterator tagitr;
    LinkedList<Edge>::ConstIterator eitr;
    for ( ; itr.valid(); ++itr) {
-      file << "Id:         " << itr.cref().id()                         << '\n';
+      file << "Id:         " << hex << itr.cref().id() << dec           << '\n';
       file << "Added:      " << ctime(itr.cref().timestamp());
       file << "Location:   " << itr.cref().location()                   << '\n';
       file << "Panoid:     " << _panoids.getString(itr.cref().panoid()) << '\n';
@@ -265,7 +265,7 @@ bool PhotoDatabase::savePlaintext (char const* fname) const {
          for (tagitr = itr.cref().tags().constIterator(); tagitr.valid(); ++tagitr) {
             Tag const& tag = tagitr.cref();
             file << "Tag " << i++ << ":\n";
-            file << "   Id:         " << tag.tagID()                    << '\n';
+            file << "   Id:         " << hex << tag.tagID() << dec      << '\n';
             file << "   Target:     " << tag.target()                   << '\n';
             file << "   Timestamp:  " << ctime(tag.timestamp());
             file << "   Theta Low:  " << tag.theta1()                   << '\n';
@@ -293,6 +293,15 @@ bool PhotoDatabase::savePlaintext (char const* fname) const {
    file.close();
 
    return true;
+}
+
+//------------------------------------------------------------------------------
+PhotoID PhotoDatabase::newPhotoID () {
+   unsigned newid;
+   do {
+      newid = _rand.u32();
+   } while (_metadata.find(PhotoID(newid)));
+   return PhotoID(newid);
 }
 
 //------------------------------------------------------------------------------

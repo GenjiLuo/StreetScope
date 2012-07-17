@@ -29,6 +29,7 @@
 //==============================================================================
 
 class PhotoDatabase {
+friend class DatabaseTester;
 //private:
 public:
    QTree<PhotoKey, 2> _photokeys;    // allows quick lookup of photos by Location
@@ -99,6 +100,11 @@ public:
    //----------------------------------------------------------------------------
    // Photo Operations
 
+   // generates a new (currently unused) photo id
+   PhotoID newPhotoID ();
+   // generates a new (currently unused) tag id
+   TagID newTagID ();
+
    // Returns a linked list of all photos within the specified lat/lon box
    inline LinkedList<PhotoKey>* findPanos (float latlow, float lonlow, float lathigh, float lonhigh) const;
    // Returns a linked list of photos nearby the specified location
@@ -115,8 +121,6 @@ public:
    // Finds a specific tag on a specific photo
    inline Tag* getTag (PhotoID photoid, TagID tagid);
    
-   // generates a new (as of yet unused tag id)
-   TagID newTagID ();
    // Adds a new tag to a photo
    bool addTag (PhotoID photoid, Target target, Angle theta1, Angle phi1, Angle theta2, Angle phi2);
    

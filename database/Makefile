@@ -2,8 +2,8 @@
 
 # compilation variables
 CXX = g++
-CXXFLAGS = -Wall -o3 -std=c++11
-#CXXFLAGS = -Wall -g
+#CXXFLAGS = -Wall -o3 -std=c++11
+CXXFLAGS = -Wall -g -std=c++11
 LFLAGS = -lcurl `Magick++-config --ldflags --libs`
 
 # convenience variables

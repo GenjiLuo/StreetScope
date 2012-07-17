@@ -27,7 +27,8 @@ public:
    DatabaseTester (unsigned initialCapacity): _db1(initialCapacity), _db2(initialCapacity) {}
    void setRootDir (std::string rootDir) { _db1.setRootDir(rootDir); _db2.setRootDir(rootDir); }
    void setPanoDir (std::string panoDir) { _db1.setPanoDir(panoDir); _db2.setPanoDir(panoDir); }
-   void setRandState (unsigned x, unsigned y) { _rand.setState(x, y); }
+   void setRandState (unsigned x, unsigned y) { _db1.setRandState(x, y); _db2.setRandState(x, y); }
+   void setTesterRandState (unsigned x, unsigned y) { _rand.setState(x, y); }
    void addRandomEntries (unsigned n);
    void addRandomTags (unsigned n);
    bool save1 ();
@@ -75,7 +76,24 @@ void DatabaseTester::addRandomEntries (unsigned n) {
 }
 
 void DatabaseTester::addRandomTags (unsigned n) {
-   
+   unsigned ntags;
+   Target target = Target::Trash;
+   Angle theta1;
+   Angle phi1;
+   Angle theta2;
+   Angle phi2;
+
+   HashSet<PhotoMetadata, MemoryPoolF>::Iterator itr = _db1._metadata.iterator();
+   for ( ; itr.valid(); ++itr) {
+      ntags = _rand.u32() % n;
+      for (unsigned i=0; i<ntags; ++i) {
+         theta1 = _rand.f64() * 360.0;
+         phi1   = _rand.f64() * 180.0 - 90.0;
+         theta2 = _rand.f64() * 360.0;
+         phi2   = _rand.f64() * 180.0 - 90.0;
+         _db1.addTag(itr.ref().id(), target, theta1, phi1, theta2, phi2);
+      }
+   }
 }
 
 bool DatabaseTester::save1 () {
@@ -120,13 +138,16 @@ int main (int argc, char * const argv[]) {
    
  
    
-   unsigned n = 10000;
+   unsigned n = 100;
+   unsigned maxTagsPerPhoto = 3;
    DatabaseTester tester(n);
    tester.setRootDir("/home/erik/Code/streetview/database/data/");
    tester.setPanoDir("/home/erik/Code/streetview/database/data/panos/");
    tester.setRandState(123, 456);
+   tester.setTesterRandState(612, 1990);
 
    tester.addRandomEntries(n);
+   tester.addRandomTags(maxTagsPerPhoto);
    tester.savePlaintext1();
    tester.save1();
    tester.load2();

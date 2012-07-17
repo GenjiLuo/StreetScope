@@ -138,7 +138,7 @@ void* MemoryPoolF::alloc () {
       sortBlocks();
 
       // If there's hardly any room in the block with the most free space,
-      // we risk having to resort our blocks frequently.
+      // we risk having to re-sort our blocks frequently.
       // (This will be less of a problem once sorting is implemented as a partial
       // quicksort, but for now this would be very bad.)
       if (!_blocks or _block[0].freeItems() < _minFree) {
@@ -173,6 +173,7 @@ unsigned MemoryPoolF::donate (void* start, unsigned size) {
       shiftBlockArray();
    }
 
+   new(&_block[0]) MemoryBlockRecord;
    MemoryBlockRecord& block = _block[0];
    block.attach(start, size);
    unsigned addedCap = block.partition(_itemSize);
