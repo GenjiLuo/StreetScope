@@ -2,8 +2,8 @@
 
 # compilation variables
 CXX = g++
-#CXXFLAGS = -Wall -o3 -std=c++11
-CXXFLAGS = -Wall -g -std=c++11
+CXXFLAGS = -Wall -o3 -std=c++11
+#CXXFLAGS = -Wall -g -std=c++11
 LFLAGS = -lcurl `Magick++-config --ldflags --libs`
 
 # convenience variables
@@ -15,7 +15,7 @@ ehpp = $(estdlib)/hpp
 einclude = -I$(eh) -I$(ehpp)
 
 
-bare_objects = Database.o DatabaseXML.o PugiXML.o GoogleMaps.o Location.o PhotoTypes.o TagTypes.o Polyline.o SimpleCharPool.o MemoryPool.o MemoryPoolF.o BitField.o Random.o
+bare_objects = Database.o DatabaseXML.o DatabaseTester.o PugiXML.o GoogleMaps.o Location.o PhotoTypes.o TagTypes.o Polyline.o SimpleCharPool.o MemoryPool.o MemoryPoolF.o BitField.o Random.o
 objects = $(patsubst %,$(odir)/%,$(bare_objects))
 
 
@@ -30,6 +30,9 @@ $(odir)/Database.o : Database.cpp Database.h PhotoTypes.h TagTypes.h Location.h 
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(odir)/DatabaseXML.o : DatabaseXML.cpp DatabaseXML.h Database.h
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+$(odir)/DatabaseTester.o : DatabaseTester.cpp DatabaseTester.h Database.h Random.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(odir)/PugiXML.o : pugixml.cpp pugixml.hpp pugiconfig.hpp
