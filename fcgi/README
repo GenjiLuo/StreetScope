@@ -6,9 +6,9 @@ our database library (run "make; make lib" in the database directory)
 Dependencies:
 libcurl
 ImageMagick++
-libfcgi
+cgicc (libcgicc5-dev)
+libfcgi (libfcgi-dev)
 libfcgi++
-cgicc
 
 
 Building:

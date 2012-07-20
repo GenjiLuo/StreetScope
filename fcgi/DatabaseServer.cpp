@@ -108,9 +108,6 @@ ostream& DatabaseServer::panoIdNear (ostream& os, Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
    printXMLHeader(os);
    
-   // Print debugging info
-//   renderDebuggingInfo(os, cgi);
-
    // extract info
    float lat = static_cast<float>(cgi["lat"]->getDoubleValue());
    float lon = static_cast<float>(cgi["lon"]->getDoubleValue());
@@ -181,11 +178,10 @@ ostream& DatabaseServer::removeTag (ostream& os, cgicc::Cgicc const& cgi) {
    printXMLHeader(os);
    
    // extract info
-   unsigned photo = static_cast<unsigned>(cgi["photo_id"]->getIntegerValue());
-   unsigned tag = static_cast<unsigned>(cgi["tag_id"]->getIntegerValue());
+   unsigned tagid = static_cast<unsigned>(cgi["tag_id"]->getIntegerValue());
 
    // remove specified tag from the database
-   bool result = _db.removeTag(photo, tag);
+   bool result = _db.removeTag(TagID(tagid));
    pugi::xml_document doc;
    pugi::xml_node results = prepareDocument(doc);
    if (result) {

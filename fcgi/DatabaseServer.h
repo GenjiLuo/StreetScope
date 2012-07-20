@@ -47,7 +47,7 @@ public:
    // cmd=new_tag, expects variables id, t1, p1, t2, p2
    std::ostream& newTag (std::ostream& os, cgicc::Cgicc const& cgi);
 
-   // cmd=remove_tag, expects variables photo_id and tag_id
+   // cmd=remove_tag, expects variable tag_id
    std::ostream& removeTag (std::ostream& os, cgicc::Cgicc const& cgi);
 
    // cmd=save_database
