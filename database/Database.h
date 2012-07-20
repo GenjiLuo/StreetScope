@@ -56,6 +56,7 @@ public:
    void setRootDir (std::string rootDir);
    void setPanoDir (std::string panoDir);
    void setRandState (unsigned x, unsigned y) { _rand.setState(x, y); }
+   void getRandState (unsigned& x, unsigned& y) const { _rand.state(x, y); }
 
    // Accessor Methods
    unsigned size () const { return _photokeys.size(); }

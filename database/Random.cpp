@@ -33,8 +33,6 @@ void XorShift32::setState (u_64 seed) {
 void XorShift32::setState (u_32 lowSeed, u_32 highSeed) {
 	_x= highSeed;
 	_y= lowSeed;
-	for (u_32 j=0; j<6; ++j)
-		next();
 }
 
 //------------------------------------------------------------------------------
