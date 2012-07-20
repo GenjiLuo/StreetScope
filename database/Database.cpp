@@ -196,6 +196,7 @@ bool PhotoDatabase::loadDatabase () {
    unsigned x, y;
    file.read(reinterpret_cast<char*>(&x), sizeof(unsigned));
    file.read(reinterpret_cast<char*>(&y), sizeof(unsigned));
+   setRandState(x, y);
 
    // load metdata
    PhotoMetadata metadata;
