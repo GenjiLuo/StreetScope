@@ -31,6 +31,9 @@ ostream& DatabaseServer::status (ostream& os, cgicc::Cgicc const& cgi, bool fail
    os << "<p>" << '\n';
    os << "The database root directory is " << _db.rootDirectory() << ".<br/>\n";
    os << "The database pano directory is " << _db.panoDirectory() << ".<br/>\n";
+   unsigned x, y;
+   _db.getRandState(x, y);
+   os << "The random number generator state is " << x << ", " << y << ".<br/>\n";
    os << "The database contains " << _db.size() << " photos and " << _db.tags() << " tags.\n";
    os << "</p>" << '\n';
 
