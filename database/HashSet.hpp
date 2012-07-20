@@ -46,6 +46,8 @@
  * the number of hash bins, and start looking at the bottom n+1 bits of
  * each item's hash. (This occurs when the number of items in the HashSet
  * exceeds _trigger.)
+ *
+ * ToDo: _size is now redundant (information exists in MemoryPoolF)
  */
 
 
@@ -363,6 +365,7 @@ bool HashSet<ITEM, POOL>::remove (KEY const& key) {
    if (node->_hash == hash and node->_item.cref() == cref(key)) {
       _bin[hash & _mask] = node->_next;
       _pool.free(node);
+      --_size;
       return true;
    }
    HashNode* nextnode = node->_next;
@@ -370,6 +373,7 @@ bool HashSet<ITEM, POOL>::remove (KEY const& key) {
       if (nextnode->_hash == hash and nextnode->_item.cref() == cref(key)) {
          node->_next = nextnode->_next;
          _pool.free(nextnode);
+         --_size;
          return true;
       }
       node = nextnode;

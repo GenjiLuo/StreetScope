@@ -49,6 +49,18 @@ PhotoMetadata::PhotoMetadata (PhotoID id,
 }
 
 //------------------------------------------------------------------------------
+void PhotoMetadata::print () const {
+   std::cout << "Id:       " << hex << id() << dec << '\n';
+   std::cout << "Added:    " << ctime(timestamp());
+   std::cout << "Location: " << location() << '\n';
+   std::cout << "Orig Loc: " << originalLocation() << '\n';
+   std::cout << "Cap Date: " << ctime(captureDate());
+   std::cout << "Tags:     " << tags().items() << '\n';
+   std::cout << "Edges:    " << edges().items() << '\n';
+   std::cout << '\n';
+}
+
+//------------------------------------------------------------------------------
 std::ostream& PhotoMetadata::save (std::ostream& os) const {
    // Write plain old data
    os.write(reinterpret_cast<char const*>(this), dataSize());

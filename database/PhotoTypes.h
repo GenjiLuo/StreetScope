@@ -77,6 +77,7 @@ public:
    TagID tagID () const { return _tagid; }
    PhotoID photoID () const { return _photoid; }
    unsigned hash () const { return _tagid.hash(); }
+   bool operator== (TagKey const& tagkey) const { return _tagid == tagkey._tagid; }
 };
 inline bool operator== (TagKey const& tagkey, TagID tagid) { return tagkey.tagID() == tagid; }
 inline bool operator== (TagID tagid, TagKey const& tagkey) { return tagkey.tagID() == tagid; }
@@ -168,16 +169,7 @@ public:
    // equality test
    bool operator== (PhotoMetadata const& metadata) const { return id() == metadata.id(); }
    
-   void print () const {
-      std::cout << id();
-//      std::cout << "Id:       " << id() << '\n';
-//      std::cout << "Added:    " << ctime(timestamp());
-//      std::cout << "Location: " << location() << '\n';
-//      std::cout << "Orig Loc: " << originalLocation() << '\n';
-//      std::cout << "Cap Date: " << ctime(captureDate());
-//      std::cout << "Tags:     " << tags().items() << '\n';
-//      std::cout << '\n';
-   }
+   void print () const;
    
    // writes the PhotoMetadata to the ostream in binary format.
    std::ostream& save (std::ostream& os) const;

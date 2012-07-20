@@ -4,6 +4,7 @@
 //==============================================================================
 
 #include "DatabaseTester.h"
+#include <sstream>
 
 using namespace std;
 
@@ -60,6 +61,10 @@ void DatabaseTester::addRandomTags (unsigned n) {
    Angle theta2;
    Angle phi2;
 
+   // n is used as a modulus (_rand.u32() % n) so if we ever want to get exactly
+   // n tags we actually want to mod out by n+1.
+   ++n;
+
    HashSet<PhotoMetadata, MemoryPoolF>::Iterator itr = _db1._metadata.iterator();
    for ( ; itr.valid(); ++itr) {
       ntags = _rand.u32() % n;
@@ -69,6 +74,41 @@ void DatabaseTester::addRandomTags (unsigned n) {
          theta2 = _rand.f64() * 360.0;
          phi2   = _rand.f64() * 180.0 - 90.0;
          _db1.addTag(itr.ref().id(), target, theta1, phi1, theta2, phi2);
+      }
+   }
+}
+
+//------------------------------------------------------------------------------
+void DatabaseTester::deleteRandomTags (unsigned n) {
+   unsigned nTags;
+   unsigned min;
+   unsigned nDelete;
+   unsigned index;
+
+   // n is used as a modulus (_rand.u32() % n) so if we ever want to delete exactly
+   // n tags we actually want to mod out by n+1.
+   ++n;
+
+   // for each photo in the database...
+   HashSet<PhotoMetadata, MemoryPoolF>::Iterator itr = _db1._metadata.iterator();
+   for ( ; itr.valid(); ++itr) {
+      // choose a number of tags to remove
+      TagSet& tags = itr.ref().tags();
+      nTags = tags.items();
+      if (nTags == 0) continue;
+      min = (nTags < n) ? nTags : n;
+      nDelete = _rand.u32() % min;
+      cout << hex << itr.cref().id() << dec << ": " << nDelete << '\n';
+
+      for (unsigned i=0; i<nDelete; ++i) {
+         // move a random number of steps down the linked list of tags
+         nTags = tags.items();
+         index = _rand.u32() % nTags;
+         TagSet::Iterator tagitr = tags.iterator();
+         for (unsigned j=0; j<index; ++j) {
+            ++tagitr;
+         }
+         _db1.removeTag(tagitr.cref().tagID());
       }
    }
 }
@@ -95,7 +135,9 @@ bool DatabaseTester::load2 () {
 
 //------------------------------------------------------------------------------
 bool DatabaseTester::savePlaintext1 () {
-   if (_db1.savePlaintext("test1")) {
+   ostringstream name;
+   name << "test1_" << _save1++;
+   if (_db1.savePlaintext(name.str().c_str())) {
       cout << "Saved database one (plaintext).\n";
       return true;
    }
@@ -105,7 +147,9 @@ bool DatabaseTester::savePlaintext1 () {
 
 //------------------------------------------------------------------------------
 bool DatabaseTester::savePlaintext2 () {
-   if (_db2.savePlaintext("test2")) {
+   ostringstream name;
+   name << "test2_" << _save2++;
+   if (_db2.savePlaintext(name.str().c_str())) {
       cout << "Saved database two (plaintext).\n";
       return true;
    }

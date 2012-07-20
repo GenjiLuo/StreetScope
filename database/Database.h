@@ -38,7 +38,6 @@ public:
    MemoryPoolF _tagpool;             // shared by all TagSets (used by their linked lists)
    MemoryPoolF _edgepool;            // shared by all EdgeSets (used by their linked lists)
    XorShift32 _rand;                 // generates ids
-   unsigned _tags;                   // total number of tags
    SimpleCharPool _panoids;          // panoids of images from Google Street View
    SimpleCharPool _epanoids;         // panoids of edges
 //   SimpleCharPool _tagTargets;       // stores the targets of the tags
@@ -60,7 +59,7 @@ public:
 
    // Accessor Methods
    unsigned size () const { return _photokeys.size(); }
-   unsigned tags () const { return _tags; }
+   unsigned tags () const { return _tagkeys.size(); }
    char const* rootDirectory () const { return _rootDir.c_str(); }
    char const* panoDirectory () const { return _panoDir.c_str(); }
    QTree<PhotoKey, 2> const& keys () const { return _photokeys; }

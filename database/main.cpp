@@ -24,7 +24,8 @@ int main (int argc, char * const argv[]) {
    
  
    
-   unsigned n = 10000;
+   // Tag Addition and Removal Stress Test
+   unsigned n = 30;
    unsigned maxTagsPerPhoto = 3;
    DatabaseTester tester(n);
    tester.setRootDir("/home/erik/Code/streetview/database/data/");
@@ -33,7 +34,10 @@ int main (int argc, char * const argv[]) {
    tester.setTesterRandState(612, 1990);
 
    tester.addRandomEntries(n);
-   tester.addRandomTags(maxTagsPerPhoto);
+   for (unsigned i=0; i<100; ++i) {
+      tester.addRandomTags(maxTagsPerPhoto);
+      tester.deleteRandomTags(100);
+   }
    tester.savePlaintext1();
    tester.save1();
    tester.load2();

@@ -20,7 +20,6 @@ PhotoDatabase::PhotoDatabase (unsigned initialCapacity)
 : _photokeys(initialCapacity),          // exactly one PhotoKey per photo
   _metadata(initialCapacity),           // exactly one PhotoMetadata per photo
   _tagkeys(initialCapacity),            // approx 1 tag per photo (is this right?)
-  _tags(0),
   _panoids(initialCapacity<<4),         // roughly 16 characters per id (per photo)
   _epanoids(initialCapacity<<5),        // roughly 2 edges per photo
 //  _tagTargets(256)                      // completely arbitrary:
@@ -204,8 +203,8 @@ bool PhotoDatabase::loadDatabase () {
    while (file.good()) {
       _photokeys.add(metadata.photoKey());
       PhotoMetadata& newMetadata = _metadata.add(metadata);
-      _tags += newMetadata.loadTags(file, _tagpool);
-      newMetadata.loadEdges(file, _tagpool);
+      newMetadata.loadTags(file, _tagpool);
+      newMetadata.loadEdges(file, _edgepool);
       metadata.loadData(file);
    }
    file.close();
@@ -242,13 +241,16 @@ bool PhotoDatabase::savePlaintext (char const* fname) const {
    unsigned x, y;
    _rand.state(x, y);
    file << "Random number generator state: " << x << ", " << y << '\n';
+   file << "Total Panoramas: " << _metadata.size() << '\n';
+   file << "Total Tags: " << _tagkeys.size() << '\n';
    file << '\n';
    
    // Save Metadata
-   unsigned entries = 0;
    HashSet<PhotoMetadata, MemoryPoolF>::ConstIterator itr = _metadata.constIterator();
    LinkedList<Tag>::ConstIterator tagitr;
    LinkedList<Edge>::ConstIterator eitr;
+   unsigned totalPhotos = 0;
+   unsigned totalTags = 0;
    for ( ; itr.valid(); ++itr) {
       file << "Id:         " << hex << itr.cref().id() << dec           << '\n';
       file << "Added:      " << ctime(itr.cref().timestamp());
@@ -272,8 +274,10 @@ bool PhotoDatabase::savePlaintext (char const* fname) const {
             file << "   Phi Low:    " << tag.phi1()                     << '\n';
             file << "   Theta High: " << tag.theta2()                   << '\n';
             file << "   Phi High:   " << tag.phi2()                     << '\n';
+            ++totalTags;
          }
       }
+      file << "Edges:      " << itr.cref().edges().items()              << '\n';
       if (itr.cref().edges().items() > 0) {
          unsigned i = 0;
          for (eitr = itr.cref().edges().constIterator(); eitr.valid(); ++eitr) {
@@ -284,10 +288,11 @@ bool PhotoDatabase::savePlaintext (char const* fname) const {
          }
       }
       file << '\n';
-      ++entries;
+      ++totalPhotos;
    }
-   
-   file << "Summary: " << entries << " entries.\n";
+
+   file << "Total Photos: " << totalPhotos << '\n';
+   file << "Total Tags: " << totalTags << '\n';
    file << '\n';
    
    file.close();
@@ -318,7 +323,9 @@ bool PhotoDatabase::addTag (PhotoID photoid, Target target, Angle theta1, Angle 
    PhotoMetadata* photo = _metadata.find(photoid);
    if (!photo)
       return false;
-   photo->tags().add(_tagpool, newTagID(), target, theta1, phi1, theta2, phi2);
+   TagID tagid = newTagID();
+   photo->tags().add(_tagpool, tagid, target, theta1, phi1, theta2, phi2);
+   _tagkeys.add(TagKey(tagid, photoid));
    return true;
 }
 

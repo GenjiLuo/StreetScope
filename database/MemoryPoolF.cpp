@@ -124,8 +124,7 @@ unsigned MemoryPoolF::setItemSize (unsigned itemSize, unsigned alignment) {
 
 //------------------------------------------------------------------------------
 MemoryPoolF::~MemoryPoolF () {
-   releaseAll();
-   std::free(_block);
+   delete[] _block;
 }
 
 //------------------------------------------------------------------------------
@@ -173,7 +172,7 @@ unsigned MemoryPoolF::donate (void* start, unsigned size) {
       shiftBlockArray();
    }
 
-   new(&_block[0]) MemoryBlockRecord;
+   //new(&_block[0]) MemoryBlockRecord;
    MemoryBlockRecord& block = _block[0];
    block.attach(start, size);
    unsigned addedCap = block.partition(_itemSize);
@@ -198,13 +197,14 @@ void MemoryPoolF::resizeBlockArray () {
    } else {
       newMaxBlocks = _maxBlocks + (_maxBlocks >> 1);
    }
-   auto newblock = static_cast<MemoryBlockRecord*> (malloc(newMaxBlocks*sizeof(MemoryBlockRecord)));
+   //auto newblock = static_cast<MemoryBlockRecord*> (malloc(newMaxBlocks*sizeof(MemoryBlockRecord)));
+   auto newblock = new MemoryBlockRecord[newMaxBlocks];
 
    for (unsigned i=0; i<_blocks; ++i) {
       newblock[i+1] = std::move(_block[i]);
    }
    ++_blocks;
-   std::free(_block);
+   delete[] _block;
    _block = newblock;
    _maxBlocks = newMaxBlocks;
 }
