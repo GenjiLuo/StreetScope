@@ -4,7 +4,7 @@
 CXX = g++
 CXXFLAGS = -Wall -o3 -std=c++11
 #CXXFLAGS = -Wall -g -std=c++11
-LFLAGS = -lcurl `Magick++-config --ldflags --libs`
+LFLAGS = -lcurl `Magick++-config --cppflags --cxxflags --ldflags --libs`
 
 # convenience variables
 odir = bin
@@ -15,13 +15,13 @@ ehpp = $(estdlib)/hpp
 einclude = -I$(eh) -I$(ehpp)
 
 
-bare_objects = Database.o DatabaseXML.o DatabaseTester.o PugiXML.o GoogleMaps.o Location.o PhotoTypes.o TagTypes.o Polyline.o SimpleCharPool.o MemoryPool.o MemoryPoolF.o BitField.o Random.o
+bare_objects = Database.o DatabaseXML.o DatabaseTester.o PugiXML.o GoogleMaps.o Projection.o Location.o PhotoTypes.o TagTypes.o Polyline.o SimpleCharPool.o MemoryPool.o MemoryPoolF.o BitField.o Random.o
 objects = $(patsubst %,$(odir)/%,$(bare_objects))
 
 
 # rules
 $(odir)/main : main.cpp $(objects)
-	$(CXX) $(CXXFLAGS) -o bin/main main.cpp $(objects) $(LFLAGS)
+	$(CXX) $(CXXFLAGS) -o bin/main main.cpp -fopenmp `Magick++-config --cppflags --cxxflags` $(objects) $(LFLAGS)
 
 lib : $(objects)
 	ar vrs lib/libdatabase.a $(objects)
@@ -39,6 +39,9 @@ $(odir)/PugiXML.o : pugixml.cpp pugixml.hpp pugiconfig.hpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(odir)/GoogleMaps.o : GoogleMaps.cpp GoogleMaps.h Database.h Polyline.h
+	$(CXX) $(CXXFLAGS) -c -o $@ $< `Magick++-config --cppflags --cxxflags`
+
+$(odir)/Projection.o : Projection.cpp Projection.h Database.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $< `Magick++-config --cppflags --cxxflags`
 
 $(odir)/Location.o : Location.cpp Location.h Hypergrid.hpp

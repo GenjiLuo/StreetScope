@@ -193,23 +193,23 @@ PhotoMetadata* ImageDownloader::downloadPano (Panorama const& panorama, unsigned
    // download tiles and stitch them together
    for (unsigned x=0; x<xTiles; ++x) {
       for (unsigned y=0; y<yTiles; ++y) {
-	 ostringstream url;
-	 renderImageURL(url, panorama.panoid, x, y, zoom);
-	 //cout << "Pulling image from " << url.str() << '\n';
-	 if (!fillBuffer(_imageBuffer, url.str().c_str())) {
-	    cout << "Could not download first tile from panorama \"" << panorama.panoid << "\".\n";
-	    return 0;
-	 }
+         ostringstream url;
+         renderImageURL(url, panorama.panoid, x, y, zoom);
+         //cout << "Pulling image from " << url.str() << '\n';
+         if (!fillBuffer(_imageBuffer, url.str().c_str())) {
+            cout << "Could not download first tile from panorama \"" << panorama.panoid << "\".\n";
+            return 0;
+         }
 
-	 // note: This copies the data into the blob. Useless, but I think it prevents data from
-	 // being copied in the next line. (We use the blob not for this reason, but so that
-	 // timeouts and such are detected by libcurl and not ImageMagick++.)
-	 magickBlob.update(_imageBuffer.data(), _imageBuffer.filled());
+         // note: This copies the data into the blob. Useless, but I think it prevents data from
+         // being copied in the next line. (We use the blob not for this reason, but so that
+         // timeouts and such are detected by libcurl and not ImageMagick++.)
+         magickBlob.update(_imageBuffer.data(), _imageBuffer.filled());
 
-	 tile.read(magickBlob, Magick::Geometry(512, 512), "jpg");
-	 //tile.write(tempfile.str().c_str());
+         tile.read(magickBlob, Magick::Geometry(512, 512), "jpg");
+         //tile.write(tempfile.str().c_str());
 
-	 panoImage.composite(tile, 512*x, 512*y, Magick::OverCompositeOp);
+         panoImage.composite(tile, 512*x, 512*y, Magick::OverCompositeOp);
       }
    }
 
@@ -217,10 +217,8 @@ PhotoMetadata* ImageDownloader::downloadPano (Panorama const& panorama, unsigned
    PhotoMetadata* metadata = savePano(panorama);
 
    // mirror and save the photo (its name is the id we just got from the database)
-   ostringstream filename;
-   filename << _database->panoDirectory() << metadata->id() << ".jpg";
    panoImage.flop();
-   panoImage.write(filename.str().c_str());
+   panoImage.write(_database->panoPath(metadata->id()));
 
    return metadata;
 }

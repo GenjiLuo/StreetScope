@@ -8,6 +8,7 @@
 
 #include <time.h>
 #include <iostream>
+#include <iomanip>
 #include "HashFunctions.h"
 #include "Location.h"
 #include "Hypergrid.hpp"
@@ -37,7 +38,7 @@ public:
 };
 
 inline std::ostream& operator<< (std::ostream& os, PhotoID photoid) {
-   return os << photoid.u32();
+   return os << std::hex << photoid.u32() << std::dec;
 }
 
 
@@ -118,9 +119,9 @@ private:
    CharPoolIndex _panoid;  // google maps panoid
    Location _origLocation; // "original location" from google maps
    time_t _captureDate;    // "capture date" from google maps
-   Angle _panoYaw;         // The next 3 fields denote the orientation of the
-   Angle _tiltYaw;         // panorama relative to the cardinal axes and are
-   Angle _tiltPitch;       // taken directly from Google Maps.
+   Angle _panoYaw;         // angle (counterclockwise) from east to center of pano
+   Angle _tiltYaw;         // angle (counterclockwise) from east to angle of greatest pitch
+   Angle _tiltPitch;       // angle of pitch at _tiltYaw
    // Should include pano links!
    TagSet _tags;           // all of this photo's tags
    EdgeSet _edges;         // links to adjacent panoramas

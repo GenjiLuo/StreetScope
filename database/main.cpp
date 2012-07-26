@@ -9,11 +9,13 @@
 #include "Hypergrid.hpp"
 #include "GoogleMaps.h"
 #include "DatabaseTester.h"
+#include "Projection.h"
 
 #include "Polyline.h"
 #include <ctime>
 
 #include <sstream>
+#include <Magick++.h>
 
 using namespace std;
 
@@ -25,6 +27,7 @@ int main (int argc, char * const argv[]) {
  
    
    // Tag Addition and Removal Stress Test
+   /*
    unsigned n = 30;
    unsigned maxTagsPerPhoto = 3;
    DatabaseTester tester(n);
@@ -33,6 +36,9 @@ int main (int argc, char * const argv[]) {
    tester.setRandState(123, 456);
    tester.setTesterRandState(612, 1990);
 
+   tester.save1();
+   */
+   /*
    tester.addRandomEntries(n);
    for (unsigned i=0; i<100; ++i) {
       tester.addRandomTags(maxTagsPerPhoto);
@@ -42,25 +48,69 @@ int main (int argc, char * const argv[]) {
    tester.save1();
    tester.load2();
    tester.savePlaintext2();
+   */
 
 
 
-   /*
+   //*
    unsigned n = 226;
    PhotoDatabase database(n);
-   database.setRandState(123, 456);
 
    // correct paths for Erik's development machine
    database.setRootDir("/home/erik/Code/streetview/database/data/");
-   database.setPanoDir("/home/erik/Code/streetview/database/panos");
+   database.setPanoDir("/home/erik/Code/streetview/database/data/panos/");
 
    // correct paths for our Amazon machine
    //database.setRootDir("/home/ubuntu/streetview/data/");
    //database.setPanoDir("/var/www/panos/");
 
-   ImageDownloader downer(&database, 128000);
+   cout << "Loading Database.\n";
+   if (!database.loadDatabase()) {
+      ostringstream panoname;
+      panoname << 
+      cout << "Failed to load the database.\n";
+   }
+   database.savePlaintext("what.txt");
+   cout << "Panos: " << database.size() << '\n';
+   cout << "Tags: " << database.tags() << '\n';
+   cout << '\n';
+
+   /*
+   // normalize all tags
+   for (auto itr = database.tagItr(); itr.valid(); ++itr) {
+      cout << itr.cref().tagID() << '\n';
+      database.getTag(itr.ref().photoID(), itr.ref().tagID())->bounds().normalize();
+   }
+   */
+
+
+
+   /*
+   //PhotoID dworkinID(3983363979);
+   //PhotoID dworkinID(183137169);
+   //PhotoID dworkinID(3197470611);
+   PhotoID dworkinID(1002772123);
+
+   PhotoMetadata const* dworkin = database.find(dworkinID);
+   if (!dworkin) {
+      cout << "couldn't find " << dworkinID << "\n";
+      return 0;
+   } else {
+      cout << "Found " << dworkinID << ".\n";
+   }
    //*/
 
+   CylinderProjection proj;
+   proj.setRootDir("/home/erik/Code/streetview/database/data/reformatted/d1/");
+   proj.setPlan(90.0, 45.0);
+   //proj.project(database.panoPath(dworkinID), *dworkin);
+   proj.project(database);
+
+
+
+
+   //ImageDownloader downer(&database, 128000);
+   //*/
 
 
 

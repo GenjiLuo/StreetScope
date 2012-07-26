@@ -141,6 +141,13 @@ bool PhotoDatabase::findByPanoId (Location const& l, char const* panoid) const {
 }
 
 //------------------------------------------------------------------------------
+std::string PhotoDatabase::panoPath (PhotoID photoid) const {
+   ostringstream path;
+   path << _panoDir << photoid << ".jpg";
+   return path.str();
+}
+
+//------------------------------------------------------------------------------
 bool PhotoDatabase::saveDatabase () const {
    // open file
    string fmetadata = _rootDir + "metadata/metadata.bin";

@@ -17,7 +17,20 @@
 //==============================================================================
 
 //------------------------------------------------------------------------------
-typedef float Angle;
+struct Angle {
+   mutable float _a; // mutable so we can +/- 360 as needed
+
+   Angle () {}
+   Angle (float a): _a(a) {}
+
+   operator float () const { return _a; }
+   // normalizes an azimuthal angle (ie a "theta")
+   void normalize1 () const { while (_a < 0) _a += 360.0; while (_a >= 360.0) _a -= 360.0; }
+   // normalizes a polar angle (ie a "phi")
+   void normalize2 () const { if (_a < -180.0) _a = -180.0; else if (_a > 90.0) _a = 90.0; }
+
+   Angle operator+= (Angle a) { return _a += a._a; }
+};
 
 //------------------------------------------------------------------------------
 // A unique identifier that we assign to each tag.
@@ -37,9 +50,8 @@ public:
 };
 
 inline std::ostream& operator<< (std::ostream& os, TagID tagid) {
-   return os << tagid.u32();
+   return os << std::hex << tagid.u32() << std::dec;
 }
-
 
 //------------------------------------------------------------------------------
 // A Target is an object that we want our taggers to tag.
@@ -47,6 +59,22 @@ enum Target {
    Trash,
    Pothole,
    VacantLot
+};
+
+//------------------------------------------------------------------------------
+struct AngleRectangle {
+   Angle theta1;
+   Angle phi1;
+   Angle theta2;
+   Angle phi2;
+
+   AngleRectangle () {};
+   AngleRectangle (Angle theta1, Angle phi1, Angle theta2, Angle phi2)
+   : theta1(theta1), phi1(phi1), theta2(theta2), phi2(phi2) {}
+   void normalize () const { theta1.normalize1(); theta2.normalize1(); phi1.normalize2(); phi2.normalize2(); }
+
+   bool containsTheta (AngleRectangle const& ar) const;
+   void print () const;
 };
 
 //------------------------------------------------------------------------------
@@ -66,10 +94,7 @@ private:
    // _theta1 and _theta2 are measured in degrees counterclockwise from east
    // in the ground plane. _phi1 and _phi2 are measured in degrees up
    // from the ground plane.
-   Angle _theta1;
-   Angle _phi1;
-   Angle _theta2;
-   Angle _phi2;
+   AngleRectangle _bounds;
 
 public:
    Tag () {}
@@ -79,10 +104,12 @@ public:
    TagID tagID () const { return _id; }
    Target   target () const { return _target; }
    time_t const* timestamp () const { return &_timestamp; }
-   Angle theta1   () const { return _theta1; }
-   Angle phi1  () const { return _phi1; }
-   Angle theta2    () const { return _theta2; }
-   Angle phi2 () const { return _phi2; }
+   AngleRectangle const& bounds () const { return _bounds; }
+   AngleRectangle      & bounds ()       { return _bounds; }
+   Angle theta1 () const { return _bounds.theta1; }
+   Angle phi1   () const { return _bounds.phi1;   }
+   Angle theta2 () const { return _bounds.theta2; }
+   Angle phi2   () const { return _bounds.phi2;   }
 };
 
 //------------------------------------------------------------------------------

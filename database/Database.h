@@ -64,6 +64,9 @@ public:
    char const* rootDirectory () const { return _rootDir.c_str(); }
    char const* panoDirectory () const { return _panoDir.c_str(); }
    QTree<PhotoKey, 2> const& keys () const { return _photokeys; }
+   HashSet<PhotoMetadata, MemoryPoolF>::Iterator      panoItr  ()       { return _metadata.iterator(); }
+   HashSet<PhotoMetadata, MemoryPoolF>::ConstIterator panoCItr () const { return _metadata.constIterator(); }
+   HashSet<TagKey, MemoryPoolF>::Iterator tagItr () { return _tagkeys.iterator(); }
    
    //----------------------------------------------------------------------------
    // Database Operations
@@ -114,9 +117,11 @@ public:
    bool findByPanoId (Location const& l, char const* panoid) const;
 
    // Looks up the metadata associated with a PhotoKey
+   inline PhotoMetadata const* find (PhotoID photoid) const { return _metadata.find(photoid); }
    inline PhotoMetadata const& getMetadata (PhotoID photoid) const;
    inline PhotoMetadata&       getMetadata (PhotoID photoid);
    inline PhotoMetadata const& getMetadata (PhotoKey const& key) const;
+   std::string panoPath (PhotoID photoid) const;
    
    // Finds a specific tag on a specific photo
    inline Tag* getTag (PhotoID photoid, TagID tagid);
