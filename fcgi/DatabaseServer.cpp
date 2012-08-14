@@ -194,9 +194,9 @@ ostream& DatabaseServer::removeTag (ostream& os, cgicc::Cgicc const& cgi) {
    pugi::xml_document doc;
    pugi::xml_node results = prepareDocument(doc);
    if (result) {
-      results.text() = "success";
+      addResultStatus(results, true);
    } else {
-      results.text() = "failure";
+      addResultStatus(results, false);
    }
    doc.save(os);
 
