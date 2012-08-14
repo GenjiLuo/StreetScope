@@ -59,6 +59,7 @@ public:
 private:
    pugi::xml_node prepareDocument (pugi::xml_document& doc);
    void addResultStatus (pugi::xml_node& results, bool success);
+   unsigned getHexValue (cgicc::const_form_iterator const& formentry);
 };
 
 #endif // DATABASE_SERVER

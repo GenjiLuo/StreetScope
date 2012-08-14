@@ -187,7 +187,7 @@ ostream& DatabaseServer::removeTag (ostream& os, cgicc::Cgicc const& cgi) {
    printXMLHeader(os);
    
    // extract info
-   unsigned tagid = static_cast<unsigned>(cgi["tag_id"]->getIntegerValue());
+   unsigned tagid = getHexValue(cgi["tag_id"]);
 
    // remove specified tag from the database
    bool result = _db.removeTag(TagID(tagid));
@@ -271,5 +271,13 @@ void DatabaseServer::addResultStatus (pugi::xml_node& results, bool success) {
    } else {
       status.text() = "failure";
    }
+}
+
+//------------------------------------------------------------------------------
+unsigned DatabaseServer::getHexValue (cgicc::const_form_iterator const& formentry) {
+   stringstream hexstring(formentry->getStrippedValue());
+   unsigned intval;
+   hexstring >> hex >> intval;
+   return intval;
 }
 
