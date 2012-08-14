@@ -164,15 +164,17 @@ ostream& DatabaseServer::newTag (ostream& os, cgicc::Cgicc const& cgi) {
    float p2 = static_cast<float>(cgi["p2"]->getDoubleValue());
  
    // add to the database
-   bool result = _db.addTag(id, Trash, t1, p1, t2, p2);
+   Tag* newtag = _db.addTag(id, Trash, t1, p1, t2, p2);
    pugi::xml_document doc;
    pugi::xml_node results = prepareDocument(doc);
-   pugi::xml_node status = results.appendChild("status");
-   if (result) {
-      addStatus(results, true);
-      pugi::xml_node tagid
+   if (newtag) {
+      addResultStatus(results, true);
+      ostringstream tagstring;
+      tagstring << newtag->tagID();
+      pugi::xml_node tagid = results.append_child("TagID");
+      tagid.text() = tagstring.str().c_str();
    } else {
-      addStatus(results, false);
+      addResultStatus(results, false);
    }
    doc.save(os);
 
@@ -263,7 +265,7 @@ pugi::xml_node DatabaseServer::prepareDocument (pugi::xml_document& doc) {
 
 //------------------------------------------------------------------------------
 void DatabaseServer::addResultStatus (pugi::xml_node& results, bool success) {
-   pugi::xml_node status = results.appendChild("Status");
+   pugi::xml_node status = results.append_child("Status");
    if (success) {
       status.text() = "success";
    } else {

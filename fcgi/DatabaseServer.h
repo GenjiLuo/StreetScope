@@ -58,6 +58,7 @@ public:
 
 private:
    pugi::xml_node prepareDocument (pugi::xml_document& doc);
+   void addResultStatus (pugi::xml_node& results, bool success);
 };
 
 #endif // DATABASE_SERVER
