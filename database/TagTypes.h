@@ -7,6 +7,7 @@
 #define TAG_TYPES
 
 #include <time.h>
+#include <string>
 #include "MemoryPoolF.h"
 #include "LinkedList.hpp"
 #include "SimpleCharPool.h"
@@ -43,6 +44,7 @@ public:
    TagID (unsigned id): _id(id) {}
 
    unsigned u32 () const { return _id; }
+   std::string hex () const;
    unsigned hash () const { return _id; }
 
    bool operator== (TagID tagid) const { return _id == tagid._id; }

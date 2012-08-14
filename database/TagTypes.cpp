@@ -5,6 +5,8 @@
 
 #include "TagTypes.h"
 #include <iostream>
+#include <iomanip>
+#include <sstream>
 
 using namespace std;
 
@@ -12,6 +14,13 @@ using namespace std;
 //==============================================================================
 // Member Function Definitions
 //==============================================================================
+
+//------------------------------------------------------------------------------
+string TagID::hex () const {
+   ostringstream hexstring;
+   hexstring << std::hex << _id;
+   return hexstring.str();
+}
 
 //------------------------------------------------------------------------------
 bool AngleRectangle::containsTheta (AngleRectangle const& ar) const {

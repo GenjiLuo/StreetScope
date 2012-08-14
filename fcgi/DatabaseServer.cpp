@@ -49,7 +49,7 @@ ostream& DatabaseServer::metadata (ostream& os, Cgicc const& cgi) {
 //   renderDebuggingInfo(os, cgi);
 
    // extract info
-   unsigned id = cgi["id"]->getIntegerValue();
+   unsigned id = getHexValue(cgi["id"]);
 
    // get response from the database, format as xml
    pugi::xml_document doc;
@@ -157,7 +157,7 @@ ostream& DatabaseServer::newTag (ostream& os, cgicc::Cgicc const& cgi) {
    printXMLHeader(os);
    
    // extract info
-   unsigned id = static_cast<unsigned>(cgi["id"]->getIntegerValue());
+   unsigned id = getHexValue(cgi["id"]);
    float t1 = static_cast<float>(cgi["t1"]->getDoubleValue());
    float p1 = static_cast<float>(cgi["p1"]->getDoubleValue());
    float t2 = static_cast<float>(cgi["t2"]->getDoubleValue());

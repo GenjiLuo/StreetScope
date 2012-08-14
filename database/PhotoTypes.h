@@ -9,6 +9,7 @@
 #include <time.h>
 #include <iostream>
 #include <iomanip>
+#include <string>
 #include "HashFunctions.h"
 #include "Location.h"
 #include "Hypergrid.hpp"
@@ -32,6 +33,7 @@ public:
    PhotoID (unsigned id): _id(id) {}
 
    unsigned u32 () const { return _id; }
+   std::string hex () const;
    inline unsigned hash () const { return hash1(_id); }
 
    bool operator== (PhotoID photoid) const { return _id == photoid._id; }

@@ -39,7 +39,7 @@ xml_node& DatabaseXML::locationXML (xml_node& node, Location const& l, char cons
 //------------------------------------------------------------------------------
 xml_node& DatabaseXML::tagXML (xml_node& node, Tag const& tag) {
    xml_node tagnode = node.append_child("Tag");
-   tagnode.append_attribute("id") = tag.tagID().u32();
+   tagnode.append_attribute("id") = tag.tagID().hex().c_str();
    tagnode.append_attribute("target") = tag.target();
    tagnode.append_attribute("theta1") = tag.theta1();
    tagnode.append_attribute("phi1")   = tag.phi1();
@@ -59,7 +59,7 @@ xml_node& DatabaseXML::edgeXML (xml_node& node, Edge const& edge) {
 //------------------------------------------------------------------------------
 xml_node& DatabaseXML::photoMetadataXML (xml_node& node, PhotoMetadata const& pmd) {
    xml_node n = node.append_child("PhotoMetadata");
-   n.append_attribute("id") = pmd.id().u32();
+   n.append_attribute("id") = pmd.id().hex().c_str();
    n.append_attribute("pano_id") = _db._panoids.getString(pmd.panoid());
 
    timestampXML(n, pmd.timestamp(), "Timestamp");

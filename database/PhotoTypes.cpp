@@ -6,6 +6,7 @@
 #include "PhotoTypes.h"
 
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 
@@ -13,6 +14,13 @@ using namespace std;
 //==============================================================================
 // Member Function Definitions
 //==============================================================================
+
+//------------------------------------------------------------------------------
+string PhotoID::hex () const {
+   ostringstream hexstring;
+   hexstring << std::hex << _id;
+   return hexstring.str();
+}
 
 //------------------------------------------------------------------------------
 /*
