@@ -212,6 +212,9 @@ bool PhotoDatabase::loadDatabase () {
       _photokeys.add(metadata.photoKey());
       PhotoMetadata& newMetadata = _metadata.add(metadata);
       newMetadata.loadTags(file, _tagpool);
+      for (auto itr = newMetadata.tags().constIterator(); itr.valid(); ++itr) {
+         _tagkeys.add( TagKey( itr.cref().tagID(), newMetadata.id() ) );
+      }
       newMetadata.loadEdges(file, _edgepool);
       metadata.loadData(file);
    }
