@@ -327,14 +327,14 @@ TagID PhotoDatabase::newTagID () {
 }
 
 //------------------------------------------------------------------------------
-bool PhotoDatabase::addTag (PhotoID photoid, Target target, Angle theta1, Angle phi1, Angle theta2, Angle phi2) {
+Tag* PhotoDatabase::addTag (PhotoID photoid, Target target, Angle theta1, Angle phi1, Angle theta2, Angle phi2) {
    PhotoMetadata* photo = _metadata.find(photoid);
    if (!photo)
-      return false;
+      return nullptr;
    TagID tagid = newTagID();
-   photo->tags().add(_tagpool, tagid, target, theta1, phi1, theta2, phi2);
+   Tag& newtag = photo->tags().add(_tagpool, tagid, target, theta1, phi1, theta2, phi2);
    _tagkeys.add(TagKey(tagid, photoid));
-   return true;
+   return &newtag;
 }
 
 //------------------------------------------------------------------------------

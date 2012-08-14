@@ -119,10 +119,11 @@ class TagSet : public LinkedList<Tag> {
 public:
    TagSet () {}
    
-   void add (MemoryPoolF& pool, TagID tagid, Target target, Angle t1, Angle p1, Angle t2, Angle p2) {
+   Tag& add (MemoryPoolF& pool, TagID tagid, Target target, Angle t1, Angle p1, Angle t2, Angle p2) {
       Link* newlink = static_cast<Link*> (pool.alloc());
       new(&newlink->_item) Tag(tagid, target, t1, p1, t2, p2);
       addLink(newlink);
+      return newlink->_item.ref();
    }
    
    // called by PhotoMetadata::loadTags

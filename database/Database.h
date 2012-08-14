@@ -127,7 +127,7 @@ public:
    inline Tag* getTag (PhotoID photoid, TagID tagid);
    
    // Adds a new tag to a photo
-   bool addTag (PhotoID photoid, Target target, Angle theta1, Angle phi1, Angle theta2, Angle phi2);
+   Tag* addTag (PhotoID photoid, Target target, Angle theta1, Angle phi1, Angle theta2, Angle phi2);
    
    // Leaks all the tags belonging to a photo
    //inline void leakTags (PhotoID photoid);
