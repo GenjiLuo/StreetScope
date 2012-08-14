@@ -42,6 +42,8 @@ int main (int /*argc*/, const char** /*argv*/, char** /*envp*/) {
    database.setRootDir("/var/www/data/");
    //database.setRootDir("/home/ubuntu/streetview/data/");
    database.setPanoDir("/var/www/panos/");
+   // use this line only when starting a fresh database
+   // database.setRandState(12345, 67890);
    DatabaseServer dbserver(database);
    if (!database.loadDatabase()) failure = true;
    

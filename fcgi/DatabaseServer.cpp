@@ -143,6 +143,8 @@ ostream& DatabaseServer::downloadPano (ostream& os, cgicc::Cgicc const& cgi) {
    PhotoMetadata* pmd = downer.savePano(panoid.c_str(), 3);
    if (pmd) {
       _xml.photoMetadataXML(results, *pmd);
+   } else {
+      results.text() = "failure";
    }
    doc.save(os);
 
@@ -165,10 +167,12 @@ ostream& DatabaseServer::newTag (ostream& os, cgicc::Cgicc const& cgi) {
    bool result = _db.addTag(id, Trash, t1, p1, t2, p2);
    pugi::xml_document doc;
    pugi::xml_node results = prepareDocument(doc);
+   pugi::xml_node status = results.appendChild("status");
    if (result) {
-      results.text() = "success";
+      addStatus(results, true);
+      pugi::xml_node tagid
    } else {
-      results.text() = "failure";
+      addStatus(results, false);
    }
    doc.save(os);
 
@@ -255,5 +259,15 @@ pugi::xml_node DatabaseServer::prepareDocument (pugi::xml_document& doc) {
    decl.append_attribute("version") = "1.0";
    decl.append_attribute("encoding") = "UTF-8";
    return doc.append_child("Results");
+}
+
+//------------------------------------------------------------------------------
+void DatabaseServer::addResultStatus (pugi::xml_node& results, bool success) {
+   pugi::xml_node status = results.appendChild("Status");
+   if (success) {
+      status.text() = "success";
+   } else {
+      status.text() = "failure";
+   }
 }
 
