@@ -5,7 +5,6 @@
 
 #include "Projection.h"
 #include <iostream>
-#include <sstream>
 #include <iomanip>
 #include <fstream>
 
@@ -17,15 +16,11 @@ using namespace std;
 //==============================================================================
 
 //------------------------------------------------------------------------------
-void Projection::project (std::string panoPath, PhotoMetadata const& data) {
+void Projection::project (std::string panoPath, PhotoMetadata const& data, ostream& tagFile) {
    // load the image
    Magick::Image panorama(panoPath);
    panorama.flop();
    cout << "Projecting " << panoPath << ".\n";
-
-   // create base filename
-   ostringstream fileBase;
-   fileBase << _rootDir << data.id() << '_' << projectionName();
 
    // chop into pieces
    Magick::Image subimage;
@@ -36,13 +31,9 @@ void Projection::project (std::string panoPath, PhotoMetadata const& data) {
       int width  = subimage.size().width();
       int height = subimage.size().height();
 
-      // construct filenames
-      ostringstream panoFilename, tagFilename;
-      panoFilename << fileBase.str() << '_' << projectionStep() << ".jpg";
-      tagFilename  << fileBase.str() << '_' << projectionStep() << ".txt";
-
       // save the image
-      subimage.write(panoFilename.str());
+      string step_path = stepPath(data.id());
+      subimage.write(step_path);
 
       // create the tag stack
       unsigned totalTags = data.tags().items();
@@ -61,22 +52,19 @@ void Projection::project (std::string panoPath, PhotoMetadata const& data) {
          }
       }
 
-      // save tags
-      ofstream tagFile(tagFilename.str().c_str());
-      if (!tagFile) {
-         cout << "Couldn't open " << tagFilename.str() << "! Be aware the projected image may be saved.\n";
-         return;
-      }
-      tagFile << "Projection Parameters: ";
-      projectionParameters(tagFile);
-      tagFile << '\n';
-      tagFile << "Projected Tags: " << containedTags << '\n';
-      tagFile << "TagID, x1, x2, y1, y2\n";
+      // write tags to tag file
+      tagFile << step_path << ' ' << containedTags;
       for (unsigned i=0; i<containedTags; ++i) {
-         tagFile << tagIDs[i] << ", ";
-         tagFile << pixelTags[i].x1 << ", " << pixelTags[i].x2 << ", ";
-         tagFile << pixelTags[i].y1 << ", " << pixelTags[i].y2 << '\n';
+         // These lines write our format.
+         //tagFile << ' ' << tagIDs[i];
+         //tagFile << ' ' << pixelTags[i].x1 << ' ' << pixelTags[i].x2;
+         //tagFile << ' ' << pixelTags[i].y1 << ' ' << pixelTags[i].y2;
+
+         // These lines write opencv's format
+         tagFile << ' ' << pixelTags[i].x1 << ' ' << pixelTags[i].y1;
+         tagFile << ' ' << pixelTags[i].x2 - pixelTags[i].x1 << ' ' << pixelTags[i].y2 - pixelTags[i].y1;
       }
+      tagFile << '\n';
 
       // free the tag stack
       delete[] pixelTags;
@@ -86,9 +74,46 @@ void Projection::project (std::string panoPath, PhotoMetadata const& data) {
 
 //------------------------------------------------------------------------------
 void Projection::project (PhotoDatabase const& database) {
-   for (auto itr = database.panoCItr(); itr.valid(); ++itr) {
-      project(database.panoPath(itr.cref().id()), itr.cref());
+   // save parameters
+   if (!writeParameters()) {
+      return;
    }
+
+   // open the annotation file
+   string tfp = tagFilePath();
+   ofstream tagFile(tfp.c_str());
+   if (!tagFile) {
+      cout << "Couldn't open " << tfp << "!\n";
+      return;
+   }
+
+   // project all the photos in the database
+   for (auto itr = database.panoCItr(); itr.valid(); ++itr) {
+      project(database.panoPath(itr.cref().id()), itr.cref(), tagFile);
+   }
+
+   tagFile.close();
+}
+
+//------------------------------------------------------------------------------
+bool Projection::writeParameters () const {
+   // open the parameters file
+   string pfp = paramsFilePath();
+   ofstream paramsFile(pfp.c_str());
+   if (!paramsFile) {
+      cout << "Couldn't open " << pfp << "!\n";
+      return false;
+   }
+
+   // write parameters
+   paramsFile << "Projection Parameters: ";
+   projectionParameters(paramsFile);
+   paramsFile << '\n';
+   paramsFile << "The annotations file tags.txt follows the format: TagID, x1, x2, y1, y2.\n";
+
+   // close and return
+   paramsFile.close();
+   return true;
 }
 
 

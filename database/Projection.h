@@ -7,12 +7,14 @@
 #define STREETVIEW_PROJECTION
 
 #include <string>
+#include <sstream>
+
 #include "Database.h"
 #include "Magick++.h"
 
 
 //------------------------------------------------------------------------------
-// This should probably live somewhere else?
+// This should live somewhere else.
 struct Rectangle {
    int x1;
    int x2;
@@ -39,7 +41,12 @@ public:
    virtual std::string projectionStep () const = 0;
    virtual void projectionParameters (std::ostream& file) const = 0;
 
-   // all Projections have their own unique setPlan method that takes instance specific arguments
+   inline std::string paramsFilePath () const;
+   inline std::string tagFilePath () const;
+   inline std::string stepPath (PhotoID panoid) const;
+
+   // All Projections have their own setPlan method that takes arguments
+   // specific to each derived class.
    // virtual void setPlan (...) = 0;
    virtual void start      () = 0;
    virtual bool done       () = 0;
@@ -50,8 +57,10 @@ public:
 
    void setRootDir (std::string dir) { _rootDir = dir; }
    std::string identifier () const;
-   void project (std::string panoPath, PhotoMetadata const& data);
+   void project (std::string panoPath, PhotoMetadata const& data, std::ostream& tagFile);
    void project (PhotoDatabase const& database);
+
+   bool writeParameters () const;
 };
 
 
@@ -128,6 +137,32 @@ struct CylinderProjection : public Projection {
    Magick::Image projectImage (Magick::Image const& image, PhotoMetadata const& data);
    bool projectTag (AngleRectangle const& tag, AngleRectangle& projectedTag);
 };
+
+
+//==============================================================================
+// Inline Method Definitions
+//==============================================================================
+
+//------------------------------------------------------------------------------
+std::string Projection::paramsFilePath () const {
+   std::ostringstream filename;
+   filename << _rootDir << "params.txt";
+   return filename.str();
+}
+
+//------------------------------------------------------------------------------
+std::string Projection::tagFilePath () const {
+   std::ostringstream filename;
+   filename << _rootDir << "tags.txt";
+   return filename.str();
+}
+
+//------------------------------------------------------------------------------
+std::string Projection::stepPath (PhotoID panoid) const {
+   std::ostringstream filename;
+   filename << _rootDir << panoid << '_' << projectionName() << '_' << projectionStep() << ".jpg";
+   return filename.str();
+}
 
 
 #endif // STREETVIEW_PROJECTION
