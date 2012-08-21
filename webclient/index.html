@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+   <head>
+      <meta charset="utf-8" />
+      <title>Street View Tagger</title>
+
+      <link rel="stylesheet" type="text/css" href="css/tagger.css"></style>
+            
+      <script src="js/jquery-1.8.0.min.js"></script>
+      <script src="js/Three.js"></script>
+      <script src="js/GSVPano.js"></script>
+		<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+      <script src="js/Tagger.js"></script>
+      <script src="js/Graphics.js"></script>
+      <script src="js/Orientation.js"></script>
+      <script src="js/Dynamics.js"></script>
+      <script src="js/Events.js"></script>
+      <script src="js/Cloud.js"></script>
+      <script src="js/Map.js"></script>
+      <script src="js/Loader.js"></script>
+      <script src="js/Tags.js"></script>
+   </head>
+
+   <body>
+
+      <div id="container"></div>
+
+      <div id="rightbar">
+         <div id="map"></div>
+         <div class="divtitle">Quality</div>
+         <form id="pano_form">
+            <button name="scale" style="width: 4em" id="scale1" class="left bigbutton">Low</button>
+            <button name="scale" style="width: 6em" id="scale2" class="middle bigbutton">Medium</button>
+            <button name="scale" style="width: 4em" id="scale3" class="middle bigbutton">High</button>
+            <button name="scale" style="width: 7em" id="scale4" class="right bigbutton">Massive</button>
+         </form>
+         <div class="divtitle">Instructions</div>
+         <div>
+            Click and drag to look around.<br/>
+            Holding shift while starting to drag draws a tag.<br/>
+            Click on the map to navigate to a new location.<br/>
+         </div>
+			<div id="status" >
+				<div id="message" ></div>
+				<div id="error" ></div>
+			</div>
+      </div>
+			
+
+		<div id="preloader" >Loading...</div>
+
+      <div id="leftbar">
+
+         <div class="divtitle">Metadata</div>
+         <div id="panodiv">
+            <div class="tagkey">id</div>
+            <div class="tagvalue" id="pano_id">23984dh92</div>
+            <div class="tagclear"></div>
+            <div class="tagkey">lat</div>
+            <div class="tagvalue" id="pano_lat">123.21</div>
+            <div class="tagclear"></div>
+            <div class="tagkey">lon</div>
+            <div class="tagvalue" id="pano_lon">092875.4</div>
+            <div class="tagclear"></div>
+         </div>
+
+         <div class="divtitle">Edges</div>
+         <div id="edgediv">
+            <!-- This is an example edge entry
+            <div class="edge">
+               <div class="tagkey">angle</div>
+               <div class="tagvalue">83.3</div>
+               <div class="tagclear"></div>
+            </div>
+            -->
+         </div>
+
+         <div class="divtitle" id="tagtitle">0 Tags</div>
+         <span id="save_btn" class="btn">Save to Database</span>
+         <div id="tagdiv">
+            <!-- This is an example tag entry
+            <div class="tag">
+               <div class="tagkey">ID</div>
+               <div class="tagvalue">cb396a4</div>
+               <div class="tagclear"></div>
+               <div class="tagkey">Theta 1</div>
+               <div class="tagvalue">0.3</div>
+               <div class="tagclear"></div>
+               <div class="tagkey">Phi 1</div>
+               <div class="tagvalue">0.7</div>
+               <div class="tagclear"></div>
+               <div class="tagkey">Theta 2</div>
+               <div class="tagvalue">0.3</div>
+               <div class="tagclear"></div>
+               <div class="tagkey">Phi 2</div>
+               <div class="tagvalue">0.3</div>
+               <div class="tagclear"></div>
+               <div class="tagcontrols">
+                  <div class="locate btn">look at</div>
+                  <div class="delete btn">delete</div>
+               </div>
+            </div>
+            -->
+         </div>
+
+      </div>
+
+   </body>
+
+</html>
