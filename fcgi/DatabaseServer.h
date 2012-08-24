@@ -29,37 +29,32 @@ public:
    // cmd=status
    std::ostream& status (std::ostream& os, cgicc::Cgicc const& cgi, bool failure);
 
-   // cmd=metadata, expects variable id
+   // cmd=metadata, expects variable panorama
    std::ostream& metadata (std::ostream& os, cgicc::Cgicc const& cgi);
 
    // cmd=panos_near, expects variables lat and lon
-   std::ostream& panosNear (std::ostream& os, cgicc::Cgicc const& cgi);
+   std::ostream& panoramaNear (std::ostream& os, cgicc::Cgicc const& cgi);
 
    // cmd=panos_in_range, expects variables lat1, lon1, lat2, lon2
-   std::ostream& panosInRange (std::ostream& os, cgicc::Cgicc const& cgi);
+   //std::ostream& panosInRange (std::ostream& os, cgicc::Cgicc const& cgi);
 
    // cmd=pano_id_near, expects variables lat, lon, and pano_id
-   std::ostream& panoIdNear (std::ostream& os, cgicc::Cgicc const& cgi);
+   std::ostream& panoramaByPanoid (std::ostream& os, cgicc::Cgicc const& cgi);
 
    // cmd=download_pano, expects variable pano_id
-   std::ostream& downloadPano (std::ostream& os, cgicc::Cgicc const& cgi);
+   std::ostream& downloadPanorama (std::ostream& os, cgicc::Cgicc const& cgi);
 
    // cmd=new_tag, expects variables id, t1, p1, t2, p2
-   std::ostream& newTag (std::ostream& os, cgicc::Cgicc const& cgi);
+   //std::ostream& newTag (std::ostream& os, cgicc::Cgicc const& cgi);
 
    // cmd=remove_tag, expects variable tag_id
-   std::ostream& removeTag (std::ostream& os, cgicc::Cgicc const& cgi);
+   //std::ostream& removeTag (std::ostream& os, cgicc::Cgicc const& cgi);
 
-   // cmd=save_database
-   std::ostream& saveDatabase (std::ostream& os, cgicc::Cgicc const& cgi);
-
-   // cmd=dump_database
-   std::ostream& savePlaintext (std::ostream& os, cgicc::Cgicc const& cgi);
 
 private:
    pugi::xml_node prepareDocument (pugi::xml_document& doc);
-   void addResultStatus (pugi::xml_node& results, bool success);
-   unsigned getHexValue (cgicc::const_form_iterator const& formentry);
+   //void addResultStatus (pugi::xml_node& results, bool success);
+   //unsigned getHexValue (cgicc::const_form_iterator const& formentry);
 };
 
 #endif // DATABASE_SERVER

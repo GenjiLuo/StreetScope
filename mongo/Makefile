@@ -3,7 +3,7 @@
 # compilation variables
 CXX = g++
 CXXFLAGS = -Wall -o3
-#CXXFLAGS = -Wall -g -std=c++11
+#CXXFLAGS = -Wall -g
 LFLAGS = -lmongoclient -lboost_system -lboost_thread -lboost_filesystem -lboost_program_options
 MAGICK = `Magick++-config --cppflags --cxxflags --ldflags --libs`
 LCURL = -lcurl
@@ -21,6 +21,9 @@ objects = $(patsubst %,$(odir)/%,$(bare_objects))
 # rules
 $(odir)/main : main.cpp $(objects)
 	$(CXX) $(CXXFLAGS) -o bin/main main.cpp $(objects) $(IMONGO) $(LFLAGS) $(LCURL) $(MAGICK)
+
+lib : $(objects)
+	ar vrs lib/libdatabase.a $(objects)
 
 $(odir)/Database.o : Database.cpp Database.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $< $(IMONGO)
@@ -40,5 +43,5 @@ $(odir)/PugiXML.o : pugixml.cpp pugixml.hpp pugiconfig.hpp
 .PHONY : clean
 clean :
 	rm -v $(odir)/*
-#	rm -v $(libdir)/*
+	rm -v $(libdir)/*
 

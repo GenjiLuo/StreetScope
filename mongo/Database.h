@@ -45,15 +45,13 @@ public:
    mongo::DBClientConnection _mongo;
    boost::filesystem::path _panoDir;
 
-   unsigned _tags;
-
 public:
    //---------------------------------------------------------------------------
    // Basics
    
    // Initialization
    // All of these methods must be called before any others.
-   Database (): _tags(0) {};
+   Database () {};
    bool connect ();
    void setPanoDir (std::string const& panoDir);
 
@@ -64,7 +62,7 @@ public:
    unsigned panoramas () { return _mongo.count(panoramaCollection); }
    unsigned features () { return _mongo.count(featureCollection); }
    unsigned tagsets () { return _mongo.count(tagsetCollection); }
-   unsigned tags () const { return _tags; }
+   //unsigned tags () const { return _tags; }
 
    // Accessors
    std::string panoDirectory () const { return _panoDir.string(); }

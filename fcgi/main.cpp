@@ -37,15 +37,15 @@ int main (int /*argc*/, const char** /*argv*/, char** /*envp*/) {
    
    // Database Initialization
    bool failure = false;
-   PhotoDatabase database(256);
-   //database.setRootDir("/home/erik/Code/StreetViewDatabase/Server/data/");
-   database.setRootDir("/var/www/data/");
+   PhotoDatabase database();
+   if (!database.connect()) failure = true;
+   //database.setRootDir("/var/www/data/");
    //database.setRootDir("/home/ubuntu/streetview/data/");
-   database.setPanoDir("/var/www/panos/");
-   // use this line only when starting a fresh database
-   // database.setRandState(12345, 67890);
+   //database.setPanoDir("/var/www/panos/");
+   database.setPanoramaDirectory("/home/erik/Code/streetview/panoramas");
+   database.ensureIndexes();
+
    DatabaseServer dbserver(database);
-   if (!database.loadDatabase()) failure = true;
    
    // Session Data Initialization
    SessionData session(database);
@@ -67,13 +67,13 @@ int main (int /*argc*/, const char** /*argv*/, char** /*envp*/) {
          } else if (strcmp("metadata", command->getValue().c_str()) == 0) {
             dbserver.metadata(IO, CGI);
          } else if (strcmp("panos_near", command->getValue().c_str()) == 0) {
-            dbserver.panosNear(IO, CGI);
-         } else if (strcmp("panos_in_range", command->getValue().c_str()) == 0) {
-            dbserver.panosInRange(IO, CGI);
+            dbserver.panoramaNear(IO, CGI);
+         //} else if (strcmp("panos_in_range", command->getValue().c_str()) == 0) {
+         //   dbserver.panosInRange(IO, CGI);
          } else if (strcmp("pano_id_near", command->getValue().c_str()) == 0) {
-            dbserver.panoIdNear(IO, CGI);
+            dbserver.panoramaByPanoid(IO, CGI);
          } else if (strcmp("download_pano", command->getValue().c_str()) == 0) {
-            dbserver.downloadPano(IO, CGI);
+            dbserver.downloadPanorama(IO, CGI);
          } else if (strcmp("new_tag", command->getValue().c_str()) == 0) {
             dbserver.newTag(IO, CGI);
          } else if (strcmp("remove_tag", command->getValue().c_str()) == 0) {

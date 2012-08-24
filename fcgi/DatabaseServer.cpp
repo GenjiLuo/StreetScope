@@ -29,12 +29,9 @@ ostream& DatabaseServer::status (ostream& os, cgicc::Cgicc const& cgi, bool fail
    os << "</p>" << '\n';
 
    os << "<p>" << '\n';
-   os << "The database root directory is " << _db.rootDirectory() << ".<br/>\n";
-   os << "The database pano directory is " << _db.panoDirectory() << ".<br/>\n";
-   unsigned x, y;
-   _db.getRandState(x, y);
-   os << "The random number generator state is " << x << ", " << y << ".<br/>\n";
-   os << "The database contains " << _db.size() << " photos and " << _db.tags() << " tags.\n";
+   os << "The database pano directory is " << _db.panoramaDirectory() << ".<br/>\n";
+   os << "The database contains " << _db.panoramas() << " photos.\n";
+   os << "The database contains " << _db.features() << " features.\n";
    os << "</p>" << '\n';
 
    return os;
@@ -43,48 +40,32 @@ ostream& DatabaseServer::status (ostream& os, cgicc::Cgicc const& cgi, bool fail
 //------------------------------------------------------------------------------
 ostream& DatabaseServer::metadata (ostream& os, Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
-   printXMLHeader(os);
+   //printXMLHeader(os);
    
-   // Print debugging info
-//   renderDebuggingInfo(os, cgi);
-
    // extract info
-   unsigned id = getHexValue(cgi["id"]);
+   PanoramaID panoramaID(cgi["panorama"]->getStrippedValue());
 
-   // get response from the database, format as xml
-   pugi::xml_document doc;
-   pugi::xml_node results = prepareDocument(doc);
-   PhotoMetadata const& pmd = _db.getMetadata(id);
-   _xml.photoMetadataXML(results, pmd);
-   doc.save(os);
-   
-   return os;
+   // get response from the database
+   mongo::BSONObj panorama = _db.findPanorama(panoramaID);
+   return os << panorama.jsonString();
 }
 
 //------------------------------------------------------------------------------
-ostream& DatabaseServer::panosNear (ostream& os, Cgicc const& cgi) {
+ostream& DatabaseServer::panoramaNear (ostream& os, Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
-   printXMLHeader(os);
+   //printXMLHeader(os);
    
-   // Print debugging info
-//   renderDebuggingInfo(os, cgi);
-
    // extract info
-   float lat = static_cast<float>(cgi["lat"]->getDoubleValue());
-   float lon = static_cast<float>(cgi["lon"]->getDoubleValue());
+   double lat = cgi["lat"]->getDoubleValue();
+   double lon = cgi["lon"]->getDoubleValue();
 
-   // get response from the database, format as xml
-   pugi::xml_document doc;
-   pugi::xml_node results = prepareDocument(doc);
-   LinkedList<PhotoKey>* photos = _db.findPanosNear(Location(lat, lon));
-   _xml.photoMetadataXML(results, photos);
-   doc.save(os);
-   delete photos;
-   
-   return os;
+   // get response from the database
+   mongo::BSONObj panorama = _db.findPanorama(Location(lon, lat));
+   return os << panorama.jsonString();
 }
 
 //------------------------------------------------------------------------------
+/*
 ostream& DatabaseServer::panosInRange (ostream& os, Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
    printXMLHeader(os);
@@ -105,52 +86,45 @@ ostream& DatabaseServer::panosInRange (ostream& os, Cgicc const& cgi) {
    
    return os;
 }
+*/
 
 //------------------------------------------------------------------------------
-ostream& DatabaseServer::panoIdNear (ostream& os, Cgicc const& cgi) {
+ostream& DatabaseServer::panoramaByPanoid (ostream& os, Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
-   printXMLHeader(os);
+   //printXMLHeader(os);
    
    // extract info
-   float lat = static_cast<float>(cgi["lat"]->getDoubleValue());
-   float lon = static_cast<float>(cgi["lon"]->getDoubleValue());
+   double lat = cgi["lat"]->getDoubleValue();
+   double lon = cgi["lon"]->getDoubleValue();
    string panoid = cgi["pano_id"]->getValue();
 
-   // get response from the database, format as xml
-   pugi::xml_document doc;
-   pugi::xml_node results = prepareDocument(doc);
-   PhotoKey key;
-   if (_db.findByPanoId( Location(lat, lon), panoid.c_str(), key)) {
-      PhotoMetadata const& pmd = _db.getMetadata(key);
-      _xml.photoMetadataXML(results, pmd);
-   }
-   doc.save(os);
-   
-   return os;
+   // get response from the database
+   mongo::BSONObj panorama = _db.findPanorama(panoid);
+   return os << panorama.jsonString();
 }
 
 //------------------------------------------------------------------------------
-ostream& DatabaseServer::downloadPano (ostream& os, cgicc::Cgicc const& cgi) {
+ostream& DatabaseServer::downloadPanorama (ostream& os, cgicc::Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
-   printXMLHeader(os);
+   //printXMLHeader(os);
    
    // extract info
    string panoid = cgi["pano_id"]->getValue();
 
-   pugi::xml_document doc;
-   pugi::xml_node results = prepareDocument(doc);
+   // download the panorama
    ImageDownloader downer(&_db, 100000);
-   PhotoMetadata* pmd = downer.savePano(panoid.c_str(), 3);
-   if (pmd) {
-      _xml.photoMetadataXML(results, *pmd);
-   } else {
-      results.text() = "failure";
+   try {
+      mongo::BSONObj panorama = downer.savePano(panoid.c_str(), 3);
+      return os << panorama.jsonString();
    }
-   doc.save(os);
-
-   return os;
+   catch (DownloadError) {
+      mongo::BSONObjBuilder result;
+      result << "failure" << "true";
+      return os << result.obj().jsonString();
+   }
 }
 
+/*
 //------------------------------------------------------------------------------
 ostream& DatabaseServer::newTag (ostream& os, cgicc::Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
@@ -158,10 +132,10 @@ ostream& DatabaseServer::newTag (ostream& os, cgicc::Cgicc const& cgi) {
    
    // extract info
    unsigned id = getHexValue(cgi["id"]);
-   float t1 = static_cast<float>(cgi["t1"]->getDoubleValue());
-   float p1 = static_cast<float>(cgi["p1"]->getDoubleValue());
-   float t2 = static_cast<float>(cgi["t2"]->getDoubleValue());
-   float p2 = static_cast<float>(cgi["p2"]->getDoubleValue());
+   double t1 = cgi["t1"]->getDoubleValue();
+   double p1 = cgi["p1"]->getDoubleValue();
+   double t2 = cgi["t2"]->getDoubleValue();
+   double p2 = cgi["p2"]->getDoubleValue();
  
    // add to the database
    Tag* newtag = _db.addTag(id, Trash, t1, p1, t2, p2);
@@ -202,58 +176,7 @@ ostream& DatabaseServer::removeTag (ostream& os, cgicc::Cgicc const& cgi) {
 
    return os;
 }
-
-//------------------------------------------------------------------------------
-ostream& DatabaseServer::saveDatabase (ostream& os, cgicc::Cgicc const& cgi) {
-   // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
-   printXMLHeader(os);
-
-   // Save the database.
-   bool result = _db.saveDatabase();
-   pugi::xml_document doc;
-   pugi::xml_node results = prepareDocument(doc);
-   if (result) {
-      results.text() = "success";
-   } else {
-      results.text() = "failure";
-   }
-   doc.save(os);
-
-   return os;
-}
-
-//------------------------------------------------------------------------------
-ostream& DatabaseServer::savePlaintext (ostream& os, cgicc::Cgicc const& cgi) {
-   // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
-   printXMLHeader(os);
-
-   // Get timestamp and format for use as a filename
-   time_t timestamp = time(0);
-   char buffer[64];
-   strcpy(buffer, ctime(&timestamp));
-   unsigned i=0;
-   while (buffer[i] != '\n') { // ctime adds "\n\0" at end
-      if (buffer[i] == ' ')
-         buffer[i] = '_';
-      ++i;
-   }
-   buffer[i] = '\0'; // replace '\n' with '\0'
-
-   // Write the plaintext data
-   ostringstream filename;
-   filename << buffer << ".txt";
-   bool result = _db.savePlaintext(filename.str().c_str());
-   pugi::xml_document doc;
-   pugi::xml_node results = prepareDocument(doc);
-   if (result) {
-      results.text() = "success";
-   } else {
-      results.text() = "failure";
-   }
-   doc.save(os);
-
-   return os;
-}
+*/
 
 //------------------------------------------------------------------------------
 pugi::xml_node DatabaseServer::prepareDocument (pugi::xml_document& doc) {
@@ -263,6 +186,7 @@ pugi::xml_node DatabaseServer::prepareDocument (pugi::xml_document& doc) {
    return doc.append_child("Results");
 }
 
+/*
 //------------------------------------------------------------------------------
 void DatabaseServer::addResultStatus (pugi::xml_node& results, bool success) {
    pugi::xml_node status = results.append_child("Status");
@@ -280,4 +204,5 @@ unsigned DatabaseServer::getHexValue (cgicc::const_form_iterator const& formentr
    hexstring >> hex >> intval;
    return intval;
 }
+*/
 
