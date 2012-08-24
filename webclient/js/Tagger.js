@@ -111,7 +111,7 @@ TAGGER.app = (function () {
    function setFov (fov_theta) {
       var aspect = window.innerHeight / window.innerWidth;
       var fov_phi = 2 * Math.atan(aspect * Math.tan(fov_theta / 2));
-      var params = { theta: fov_theta, phi: fov_phi, 'aspect': aspect };
+      var params = { theta: fov_theta, phi: fov_phi };
       TAGGER.orientation.setFov(params);
       TAGGER.graphics.setFov(params);
    }
@@ -360,11 +360,34 @@ TAGGER.app = (function () {
       }
    }
 		
+   function onWindowResize (event) {
+      TAGGER.graphics.resize(TAGGER.orientation.fov_phi);
+   }
+
+   /*
+   // Zoom functions are broken.
+   // I believe something weird is going on in the three.js camera: zooming in and out
+   // repeadetdly moves the center of the screen, but I am not changing my orientation variables.
+   // This throws off tagging and dragging since I am unable to track the mouse after this happens.
+   // I don't have time to investigate further.
+   function zoomIn () {
+      TAGGER.orientation.zoomIn(_container.clientWidth / _container.clientHeight);
+      TAGGER.graphics.resize(TAGGER.orientation.fov_phi);
+   }
+
+   function zoomOut () {
+      TAGGER.orientation.zoomOut(_container.clientWidth / _container.clientHeight);
+      TAGGER.graphics.resize(TAGGER.orientation.fov_phi);
+   }
+   */
+
 
    // starts the app
    function start () {
       // get the loading bar up
       startLoading();
+
+      var initialFovPhi = Math.PI / 2;
 
       // find where to start
       var pos;
@@ -385,21 +408,29 @@ TAGGER.app = (function () {
       _downloadButton = document.getElementById("save_btn");
 
       // Initialize modules
-      TAGGER.graphics.init(_container);
+      TAGGER.graphics.initialize(_container, initialFovPhi);
       TAGGER.map.initialize(pos.lat, pos.lon);
       TAGGER.map.setOnMoveMarker(loadPanoramaNear);
       TAGGER.tags.initialize(_pano);
       TAGGER.gsv.initialize();
       TAGGER.handlers.initialize(_container);
 
-      // set fov
-      setFov(Math.PI / 2);
-
       // set panorama
       // 3bc5169b = 1002772123
       // 84928c3  = 139012302
       //loadDatabasePanoramaById('3bc5169b');
       loadPanoramaNear(pos.lat, pos.lon);
+
+      // set fov, bind resize handler
+      setFov(initialFovPhi);
+      window.addEventListener( 'resize', onWindowResize, false );
+      onWindowResize(null);
+
+      /*
+      // See note about zoom functions near their definitions.
+      $(document).bind('keydown', 'w', zoomIn);
+      $(document).bind('keydown', 'q', zoomOut);
+      */
 
       // bind scale button handlers
       for (var i=1; i<5; i+=1) {

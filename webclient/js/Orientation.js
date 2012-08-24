@@ -40,6 +40,9 @@ TAGGER.orientation = (function () {
    // Field of view and derivative variables.
    o.fov_theta = 0.0;
    o.fov_phi   = 0.0;
+   o.min_fov_phi = Math.PI / 8;
+   o.max_fov_phi = 3 * Math.PI / 4;
+   o.fov_step = Math.PI / 16;
    o.spos  = { x: 0, y: 0, z: 0 };
    o.right = { x: 0, y: 0, z: 0 };
    o.down  = { x: 0, y: 0, z: 0 };
@@ -67,6 +70,25 @@ TAGGER.orientation = (function () {
       o.down  = { x: 0, y: -2*tanp, z:       0 };
    };
 
+   /*
+   // See zoom functions in Tagger.js - zooming is broken.
+   o.zoomIn = function (aspect) {
+      var new_fov_phi = o.fov_phi - o.fov_step;
+      if (new_fov_phi < o.min_fov_phi) {
+         new_fov_phi = o.min_fov_phi;
+      }
+      o.setFov({ phi: new_fov_phi, theta: new_fov_phi * aspect });
+   };
+      
+   o.zoomOut = function (aspect) {
+      var new_fov_phi = o.fov_phi + o.fov_step;
+      if (new_fov_phi > o.max_fov_phi) {
+         new_fov_phi = o.max_fov_phi;
+      }
+      o.setFov({ phi: new_fov_phi, theta: new_fov_phi * aspect });
+   };
+   */
+      
    // caches the current view
    o.cacheView = function () {
       o.cachedView = { theta: o.view.theta, phi: o.view.phi };

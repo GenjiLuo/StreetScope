@@ -63,16 +63,6 @@ TAGGER.handlers = (function () {
       }
    }
 
-
-   // called in all move_xxx functions
-   /*
-   function move_common (e) {
-      var coords = sphericalCoords(e);
-      TAGGER.mouse.track(coords);
-   }
-   */
-   //handlers.move_common = move_common;
-
    // movement handler while dragging
    function move_drag (e) {
       var screenCoords = { x: e.clientX/window.innerWidth, y: e.clientY/window.innerHeight };

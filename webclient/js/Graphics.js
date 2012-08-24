@@ -4,25 +4,17 @@ var TAGGER = TAGGER || {}
 TAGGER.graphics = (function () {
    var graphics = {};
 
+   var _container;
+   var camera;
+
    // set the scene size
    var width = window.innerWidth;
    var height = window.innerHeight;
 
-   // set some camera attributes
-   var fov_theta = 30,
-   aspect = width / height,
-   near = 0.1,
-   far = 10000;
-
    // create a WebGL renderer, camera, scene, and projector
    var renderer = new THREE.WebGLRenderer();
-   var camera = new THREE.PerspectiveCamera( fov_theta,
-	                                aspect,
-	                                near,
-	                                far );
    var scene = new THREE.Scene();
    var projector = new THREE.Projector();
-   scene.add(camera);
 
    // let there be light
    var ambientLight = new THREE.AmbientLight(0xFFFFFF);
@@ -52,24 +44,6 @@ TAGGER.graphics = (function () {
    graphics.getFov = function () {
       return fov_theta;
    }
-
-   /*
-   function loadPano (panoid) {
-      alert("loading " + panoid);
-      sphere.material.map = THREE.ImageUtils.loadTexture('panos/' + panoid + '.jpg', {}, function () {
-         alert("done loading");
-      });
-   }
-   graphics.loadPano = loadPano;
-
-   function loadSVPano (panoid) {
-      alert("loading " + panoid + " from sv");
-      sphere.material.map = THREE.ImageUtils.loadTexture('panos/' + panoid + '.jpg', {}, function () {
-         alert("done loading from sv");
-      });
-   }
-   graphics.loadSVPano = loadSVPano;
-   */
 
    graphics.changeTexture = function (newtexture) {
       sphere.material.map = new THREE.Texture( newtexture ); 
@@ -158,19 +132,41 @@ TAGGER.graphics = (function () {
       projector.unprojectVector(vector, camera);
       var ray = new THREE.Ray(camera.position, vector.subSelf(camera.position).normalize());
       var intersects = ray.intersectObject(sphere);
-      if (!intersects) {
-         alert("Error: Could not find intersection with sphere!");
+      if (!intersects[0]) {
+         console.log("Error: Could not find intersection with sphere!");
       }
+      console.log(intersects[0].point);
       return intersects[0].point;
    };
 
    graphics.domElement = function () { return renderer.domElement; };
 
-   graphics.init = function (container) {
+   function resize (fov_phi) {
+      renderer.setSize( _container.clientWidth, _container.clientHeight );
+      camera.fov = fov_phi * TAGGER.common.radToDeg;
+      camera.aspect = _container.clientWidth / _container.clientHeight;
+      camera.updateProjectionMatrix();
+   }
+   graphics.resize = resize;
+
+   graphics.initialize = function (container, fov_phi) {
+      _container = container;
       width = window.innerWidth;
       height = window.innerHeight;
+
+      // make the camera
+      near = 0.1,
+      far = 1000;
+      camera = new THREE.PerspectiveCamera(
+         fov_phi,
+         width / height,
+         near,
+         far
+      );
+      scene.add(camera);
+
       renderer.setSize(width, height);
-      container.appendChild(renderer.domElement);
+      _container.appendChild(renderer.domElement);
 
       addAxes();
    };
