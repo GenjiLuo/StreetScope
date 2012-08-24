@@ -28,7 +28,7 @@ bool Database::connect () {
 }
 
 //------------------------------------------------------------------------------
-void Database::setPanoDir (std::string const& panoDir) {
+void Database::setPanoramaDirectory (std::string const& panoDir) {
    _panoDir = panoDir;
 }
 
@@ -42,7 +42,7 @@ void Database::ensureIndexes () {
 }
 
 //------------------------------------------------------------------------------
-string Database::panoPath (OID panoramaID) const {
+string Database::panoramaPath (OID panoramaID) const {
    ostringstream path;
    path << _panoDir << panoramaID.toString() << ".jpg";
    return path.str();

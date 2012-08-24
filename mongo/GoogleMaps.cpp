@@ -200,7 +200,7 @@ PanoramaID ImageDownloader::downloadPano (Panorama const& panorama, unsigned zoo
          //cout << "Pulling image from " << url.str() << '\n';
          if (!fillBuffer(_imageBuffer, url.str().c_str())) {
             cout << "Could not download first tile from panorama \"" << panorama.panoid << "\".\n";
-            throw(DownloaderError(panorama.panoid, "Could not download panorama."));
+            throw(DownloadError(panorama.panoid, "Could not download panorama."));
             //return 0;
          }
 
@@ -221,7 +221,7 @@ PanoramaID ImageDownloader::downloadPano (Panorama const& panorama, unsigned zoo
 
    // mirror and save the photo (its name is the id we just got from the database)
    panoImage.flop();
-   panoImage.write(_database->panoPath(panoramaID));
+   panoImage.write(_database->panoramaPath(panoramaID));
 
    return panoramaID;
 }
@@ -230,7 +230,7 @@ PanoramaID ImageDownloader::downloadPano (Panorama const& panorama, unsigned zoo
 PanoramaID ImageDownloader::savePano (char const* panoid, unsigned zoom) {
    Panorama pano;
    if (!getPano(panoid, pano))
-      throw(DownloaderError(panoid, "Could not find specified panorama."));
+      throw(DownloadError(panoid, "Could not find specified panorama."));
    return downloadPano(pano, zoom);
 }
 

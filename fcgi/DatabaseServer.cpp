@@ -94,12 +94,12 @@ ostream& DatabaseServer::panoramaByPanoid (ostream& os, Cgicc const& cgi) {
    //printXMLHeader(os);
    
    // extract info
-   double lat = cgi["lat"]->getDoubleValue();
-   double lon = cgi["lon"]->getDoubleValue();
+   //double lat = cgi["lat"]->getDoubleValue();
+   //double lon = cgi["lon"]->getDoubleValue();
    string panoid = cgi["pano_id"]->getValue();
 
    // get response from the database
-   mongo::BSONObj panorama = _db.findPanorama(panoid);
+   mongo::BSONObj panorama = _db.findPanorama(panoid.c_str());
    return os << panorama.jsonString();
 }
 
@@ -114,10 +114,11 @@ ostream& DatabaseServer::downloadPanorama (ostream& os, cgicc::Cgicc const& cgi)
    // download the panorama
    ImageDownloader downer(&_db, 100000);
    try {
-      mongo::BSONObj panorama = downer.savePano(panoid.c_str(), 3);
-      return os << panorama.jsonString();
+      PanoramaID panorama = downer.savePano(panoid.c_str(), 3);
+      mongo::BSONObj pObj = _db.findPanorama(panorama);
+      return os << pObj.jsonString();
    }
-   catch (DownloadError) {
+   catch (DownloadError error) {
       mongo::BSONObjBuilder result;
       result << "failure" << "true";
       return os << result.obj().jsonString();

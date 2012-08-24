@@ -30,10 +30,10 @@
 
 //------------------------------------------------------------------------------
 // Error thrown by ImageDownloader when unable to download a panorama.
-struct DownloaderError {
+struct DownloadError {
    std::string panoid;
    std::string message;
-   DownloaderError (std::string p, std::string m): panoid(p), message(m) {}
+   DownloadError (std::string p, std::string m): panoid(p), message(m) {}
 };
 
 //------------------------------------------------------------------------------

@@ -10,7 +10,6 @@
 
 #include "Cgicc.h"
 #include "Database.h"
-#include "DatabaseXML.h"
 #include "pugixml.hpp"
 
 
@@ -20,11 +19,10 @@
 
 class DatabaseServer {
 private:
-   PhotoDatabase& _db;
-   DatabaseXML _xml;
+   Database& _db;
 
 public:
-   DatabaseServer (PhotoDatabase& db): _db(db), _xml(db) {}
+   DatabaseServer (Database& db): _db(db) {}
 
    // cmd=status
    std::ostream& status (std::ostream& os, cgicc::Cgicc const& cgi, bool failure);

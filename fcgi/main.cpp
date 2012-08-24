@@ -16,12 +16,11 @@
 
 // Database Headers
 #include "Database.h"
-#include "DatabaseXML.h"
 #include "DatabaseServer.h"
 
 // WebPage Headers
 #include "BasicHTML.h"
-#include "SessionData.h"
+//#include "SessionData.h"
 
 using namespace std;
 using namespace cgicc;
@@ -37,7 +36,7 @@ int main (int /*argc*/, const char** /*argv*/, char** /*envp*/) {
    
    // Database Initialization
    bool failure = false;
-   PhotoDatabase database();
+   Database database;
    if (!database.connect()) failure = true;
    //database.setRootDir("/var/www/data/");
    //database.setRootDir("/home/ubuntu/streetview/data/");
@@ -48,7 +47,7 @@ int main (int /*argc*/, const char** /*argv*/, char** /*envp*/) {
    DatabaseServer dbserver(database);
    
    // Session Data Initialization
-   SessionData session(database);
+   //SessionData session(database);
    
    
    while(FCGX_Accept_r(&request) == 0) {
@@ -74,14 +73,12 @@ int main (int /*argc*/, const char** /*argv*/, char** /*envp*/) {
             dbserver.panoramaByPanoid(IO, CGI);
          } else if (strcmp("download_pano", command->getValue().c_str()) == 0) {
             dbserver.downloadPanorama(IO, CGI);
+         /*
          } else if (strcmp("new_tag", command->getValue().c_str()) == 0) {
             dbserver.newTag(IO, CGI);
          } else if (strcmp("remove_tag", command->getValue().c_str()) == 0) {
             dbserver.removeTag(IO, CGI);
-         } else if (strcmp("save_database", command->getValue().c_str()) == 0) {
-            dbserver.saveDatabase(IO, CGI);
-         } else if (strcmp("save_plaintext", command->getValue().c_str()) == 0) {
-            dbserver.savePlaintext(IO, CGI);
+         */
          } else {
             // If we haven't found the command yet, it doesn't exist.
             printHeader(IO);

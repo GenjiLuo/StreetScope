@@ -53,7 +53,7 @@ public:
    // All of these methods must be called before any others.
    Database () {};
    bool connect ();
-   void setPanoDir (std::string const& panoDir);
+   void setPanoramaDirectory (std::string const& panoDir);
 
    // Indexing
    void ensureIndexes ();
@@ -65,8 +65,8 @@ public:
    //unsigned tags () const { return _tags; }
 
    // Accessors
-   std::string panoDirectory () const { return _panoDir.string(); }
-   std::string panoPath (mongo::OID panoramaID) const;
+   std::string panoramaDirectory () const { return _panoDir.string(); }
+   std::string panoramaPath (mongo::OID panoramaID) const;
 
 
    //---------------------------------------------------------------------------
