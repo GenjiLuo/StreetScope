@@ -40,7 +40,7 @@ ostream& DatabaseServer::status (ostream& os, cgicc::Cgicc const& cgi, bool fail
 //------------------------------------------------------------------------------
 ostream& DatabaseServer::metadata (ostream& os, Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
-   //printXMLHeader(os);
+   printJSONHeader(os);
    
    // extract info
    PanoramaID panoramaID(cgi["panorama"]->getStrippedValue());
@@ -51,9 +51,24 @@ ostream& DatabaseServer::metadata (ostream& os, Cgicc const& cgi) {
 }
 
 //------------------------------------------------------------------------------
+ostream& DatabaseServer::metadataAndTagSets (ostream& os, Cgicc const& cgi) {
+   // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
+   printJSONHeader(os);
+   
+   // extract arguments
+   PanoramaID panoramaID(cgi["panorama"]->getStrippedValue());
+
+   // get data from the database
+   mongo::BSONObj panorama = _db.findPanorama(panoramaID);
+   std::auto_ptr<mongo::DBClientCursor> tagsets = _db.findTagSets(panoramaID);
+
+   return os << _json.metadataAndTagSets(panorama, tagsets).jsonString();
+}
+
+//------------------------------------------------------------------------------
 ostream& DatabaseServer::panoramaNear (ostream& os, Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
-   //printXMLHeader(os);
+   printJSONHeader(os);
    
    // extract info
    double lat = cgi["lat"]->getDoubleValue();
@@ -91,7 +106,7 @@ ostream& DatabaseServer::panosInRange (ostream& os, Cgicc const& cgi) {
 //------------------------------------------------------------------------------
 ostream& DatabaseServer::panoramaByPanoid (ostream& os, Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
-   //printXMLHeader(os);
+   printJSONHeader(os);
    
    // extract info
    //double lat = cgi["lat"]->getDoubleValue();
@@ -106,7 +121,7 @@ ostream& DatabaseServer::panoramaByPanoid (ostream& os, Cgicc const& cgi) {
 //------------------------------------------------------------------------------
 ostream& DatabaseServer::downloadPanorama (ostream& os, cgicc::Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
-   //printXMLHeader(os);
+   printJSONHeader(os);
    
    // extract info
    string panoid = cgi["pano_id"]->getValue();
@@ -127,19 +142,20 @@ ostream& DatabaseServer::downloadPanorama (ostream& os, cgicc::Cgicc const& cgi)
 
 /*
 //------------------------------------------------------------------------------
-ostream& DatabaseServer::newTag (ostream& os, cgicc::Cgicc const& cgi) {
+ostream& DatabaseServer::insertTag (ostream& os, cgicc::Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
-   printXMLHeader(os);
+   printJSONHeader(os);
    
    // extract info
-   unsigned id = getHexValue(cgi["id"]);
+   string panorama = cgi["panorama"]->getValue();
+   string feature = cgi["feature"]->getValue();
    double t1 = cgi["t1"]->getDoubleValue();
    double p1 = cgi["p1"]->getDoubleValue();
    double t2 = cgi["t2"]->getDoubleValue();
    double p2 = cgi["p2"]->getDoubleValue();
  
    // add to the database
-   Tag* newtag = _db.addTag(id, Trash, t1, p1, t2, p2);
+   Tag* newtag = _db.insertTag(PanoramaID(panorama), FeatureID(feature), t1, p1, t2, p2);
    pugi::xml_document doc;
    pugi::xml_node results = prepareDocument(doc);
    if (newtag) {

@@ -23,6 +23,7 @@
 std::ostream& printHeader (std::ostream& os);
 
 std::ostream& printXMLHeader (std::ostream& os);
+std::ostream& printJSONHeader (std::ostream& os);
 
 std::ostream& printCSSLink (std::ostream& os);
 

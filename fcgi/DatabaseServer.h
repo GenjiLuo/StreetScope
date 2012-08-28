@@ -10,6 +10,7 @@
 
 #include "Cgicc.h"
 #include "Database.h"
+#include "JSONFormatter.h"
 #include "pugixml.hpp"
 
 
@@ -20,6 +21,7 @@
 class DatabaseServer {
 private:
    Database& _db;
+   JSONFormatter _json;
 
 public:
    DatabaseServer (Database& db): _db(db) {}
@@ -29,6 +31,9 @@ public:
 
    // cmd=metadata, expects variable panorama
    std::ostream& metadata (std::ostream& os, cgicc::Cgicc const& cgi);
+
+   // cmd=metadata_and_tags, expects variable panorama
+   std::ostream& metadataAndTagSets (std::ostream& os, cgicc::Cgicc const& cgi);
 
    // cmd=panos_near, expects variables lat and lon
    std::ostream& panoramaNear (std::ostream& os, cgicc::Cgicc const& cgi);
@@ -42,8 +47,8 @@ public:
    // cmd=download_pano, expects variable pano_id
    std::ostream& downloadPanorama (std::ostream& os, cgicc::Cgicc const& cgi);
 
-   // cmd=new_tag, expects variables id, t1, p1, t2, p2
-   //std::ostream& newTag (std::ostream& os, cgicc::Cgicc const& cgi);
+   // cmd=insert_tag, expects variables panorama, feature, t1, p1, t2, p2
+   std::ostream& insertTag (std::ostream& os, cgicc::Cgicc const& cgi);
 
    // cmd=remove_tag, expects variable tag_id
    //std::ostream& removeTag (std::ostream& os, cgicc::Cgicc const& cgi);

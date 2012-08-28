@@ -13,7 +13,7 @@ LMONGO = -lmongoclient -lboost_system -lboost_thread -lboost_filesystem -lboost_
 odir = bin
 databasedir = ../mongo
 
-bare_objects = PugiXML.o BasicHTML.o DatabaseServer.o #SessionData.o 
+bare_objects = PugiXML.o BasicHTML.o DatabaseServer.o JSONFormatter.o #SessionData.o 
 objects = $(patsubst %,$(odir)/%,$(bare_objects))
 
 
@@ -31,6 +31,9 @@ $(odir)/BasicHTML.o : BasicHTML.cpp BasicHTML.h SessionData.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $< $(INCLUDES)
 
 $(odir)/DatabaseServer.o : DatabaseServer.cpp DatabaseServer.h $(databasedir)/Database.h
+	$(CXX) $(CXXFLAGS) -c -o $@ $< $(INCLUDES) $(IMONGO)
+
+$(odir)/JSONFormatter.o : JSONFormatter.cpp JSONFormatter.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $< $(INCLUDES) $(IMONGO)
 
 $(odir)/SessionData.o : SessionData.cpp SessionData.h

@@ -44,8 +44,8 @@ void Database::ensureIndexes () {
 //------------------------------------------------------------------------------
 string Database::panoramaPath (OID panoramaID) const {
    ostringstream path;
-   path << _panoDir << panoramaID.toString() << ".jpg";
-   return path.str();
+   path << panoramaID.toString() << ".jpg";
+   return ( _panoDir / path.str() ).c_str();
 }
 
 //------------------------------------------------------------------------------
@@ -58,6 +58,7 @@ OID Database::insertPanorama (Panorama const& panorama) {
    BSONArrayBuilder location;
    BSONArrayBuilder originalLocation;
    BSONObjBuilder orientation;
+   BSONArrayBuilder edges;
 
    location << panorama.location.lon;
    location << panorama.location.lat;
@@ -66,6 +67,9 @@ OID Database::insertPanorama (Panorama const& panorama) {
    orientation << "yaw" << panorama.yaw.rad();
    orientation << "tiltYaw" << panorama.tiltYaw.rad();
    orientation << "tiltPitch" << panorama.tiltPitch.rad();
+   for (vector<Edge>::const_iterator itr = panorama.edges.begin(); itr < panorama.edges.end(); ++itr) {
+      edges << BSON( "panoid" << itr->panoid << "yaw" << itr->angle.rad() );
+   }
 
    pano.genOID();
    pano << "insertDate" << DATENOW;
@@ -74,7 +78,7 @@ OID Database::insertPanorama (Panorama const& panorama) {
    pano << "originalLocation" << originalLocation.arr();
    pano << "panoid" << panorama.panoid;
    pano << "orientation" << orientation.obj();
-   pano << "edges" << BSONArray();
+   pano << "edges" << edges.arr();
 
    BSONObj p = pano.obj();
    _mongo.insert(panoramaCollection, p);

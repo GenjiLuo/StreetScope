@@ -96,7 +96,6 @@ TAGGER.app = (function () {
 
 
    function showMessage (message) {
-      showError('');
       _message.innerHTML = message;
    }
    app.showMessage = showMessage;
@@ -205,6 +204,7 @@ TAGGER.app = (function () {
    }
  
    function loadGooglePanorama (pano) {
+      console.log(pano.panoid);
       TAGGER.gsv.getData(pano.panoid).done( function (image) {
          changePanorama(pano, image);
       }).fail( function(errorObj) {

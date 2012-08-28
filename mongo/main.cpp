@@ -43,9 +43,10 @@ int main() {
    cout << "panos: " << database.panoramas() << '\n';
 
    //database.insertFeature(feature);
-   //mongo::OID newid = database.insertPanorama(pano);
+   mongo::OID newid = database.insertPanorama(pano);
    //database.insertEdge(newid, 0.123, "edge edge");
    //database.insertTag(OID("50368a87f3f742496dc124c7"), OID("50367f136dd024d9a1d5072b"), tag1);
+   cout << database.panoramaPath(newid) << '\n';
    database.findPanorama(loc1);
 
    cout << "panos: " << database.panoramas() << '\n';

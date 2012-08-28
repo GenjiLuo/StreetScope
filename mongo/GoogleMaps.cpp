@@ -131,7 +131,7 @@ bool ImageDownloader::read_sv_xml (Panorama& panorama) {
    // extract orientation
    panorama.yaw.setDeg( convertYaw( proj_node.attribute("pano_yaw_deg").as_double() ) );
    panorama.tiltYaw.setDeg( convertYaw( proj_node.attribute("tilt_yaw_deg").as_double() ) );
-   panorama.tiltPitch.setDeg( convertYaw( proj_node.attribute("tilt_pitch_deg").as_double() ) );
+   panorama.tiltPitch.setDeg( proj_node.attribute("tilt_pitch_deg").as_double() );
 
    // extract capture date
    CharPoolIndex did = _strings.addString(data_node.attribute("image_date").value());

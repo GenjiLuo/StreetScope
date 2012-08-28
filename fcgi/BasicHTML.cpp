@@ -34,6 +34,14 @@ ostream& printXMLHeader (std::ostream& os) {
 }
 
 //------------------------------------------------------------------------------
+ostream& printJSONHeader (std::ostream& os) {
+   // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
+   os << HTTPContentHeader("application/json");
+   // doctype is handled by pugixml
+   return os;
+}
+
+//------------------------------------------------------------------------------
 std::ostream& printCSSLink (std::ostream& os) {
    os << cgicc::link().set("rel", "stylesheet").set("type", "text/css").set("href", "../include/css/data_entry.css") << '\n';
    return os;

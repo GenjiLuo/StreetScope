@@ -38,7 +38,7 @@ $(odir)/DatabaseTester.o : DatabaseTester.cpp DatabaseTester.h Database.h Random
 $(odir)/PugiXML.o : pugixml.cpp pugixml.hpp pugiconfig.hpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-$(odir)/GoogleMaps.o : GoogleMaps.cpp GoogleMaps.h Database.h Polyline.h
+$(odir)/GoogleMaps.o : GoogleMaps.cpp GoogleMaps.h Database.h SimpleCharPool.h Polyline.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $< `Magick++-config --cppflags --cxxflags`
 
 $(odir)/Projection.o : Projection.cpp Projection.h Database.h

@@ -5,25 +5,22 @@ TAGGER.cloud = (function () {
    var cloud = {};
 
    var db_url = "http://23.23.248.157/fcgi/main.fcgi";
-   var db_pano_url = "http://23.23.248.157/pano/";
+   var db_pano_dir = "panoramas/";
 
 
    // returns a panorama object parsed from our database
-   function read_pano_xml ($xml) {
-      var $loc = $xml.find("Location");
-      var $orient = $xml.find("Orientation");
-      var $tag_nodes = $xml.find("Tags");
-      var $edge_nodes = $xml.find("Edges");
+   function read_pano_json (json) {
+      console.log(json);
 
       var pano = {
-         id: $xml.attr("id"),
-         panoid: $xml.attr("pano_id"),
+         id: json._id.$oid,
+         panoid: json.panoid,
          indb: true,
-         loc: { lat: parseFloat($loc.attr("lat")),
-                lon: parseFloat($loc.attr("lon")) },
-         panoYaw: parseFloat($orient.attr("panoYaw")) * TAGGER.common.degToRad,
-         tiltYaw: parseFloat($orient.attr("tiltYaw")) * TAGGER.common.degToRad,
-         tiltPitch: parseFloat($orient.attr("tiltPitch")) * TAGGER.common.degToRad,
+         loc: { lat: parseFloat(json.location[1]),
+                lon: parseFloat(json.location[0]) },
+         panoYaw: parseFloat(json.orientation.yaw),
+         tiltYaw: parseFloat(json.orientation.tiltYaw),
+         tiltPitch: parseFloat(json.orientation.tiltPitch),
          unsavedTags: 0,
          ntags: 0,
          tags: {},
@@ -31,6 +28,7 @@ TAGGER.cloud = (function () {
          edges: []
       };
 
+      /*
       $tag_nodes.find("Tag").each(function(i) {
          pano.tags[$(this).attr("id")] = {
             saved: true,
@@ -43,14 +41,15 @@ TAGGER.cloud = (function () {
          };
          pano.ntags += 1;
       });
+      */
 
-      $edge_nodes.find("Edge").each(function(i) {
+      for (edge in json.edges) {
          pano.edges.push({
-            panoid: $(this).attr("pano_id"),
-            theta:  parseFloat($(this).attr("angle")) * TAGGER.common.degToRad
+            panoid: edge.panoid,
+            theta: edge.yaw
          });
          pano.nedges += 1;
-      });
+      }
 
       return pano;
    }
@@ -69,7 +68,7 @@ TAGGER.cloud = (function () {
       }).done( function (data) { 
          var $pano_xml = $(data).find("PhotoMetadata");
          if ($pano_xml.length > 0) {
-            defer.resolve(read_pano_xml($pano_xml));
+            defer.resolve(read_pano_json($pano_xml));
          } else {
             defer.reject({ type: TAGGER.error.databaseError, description: 'invalid panorama id' });
          }
@@ -90,7 +89,7 @@ TAGGER.cloud = (function () {
          defer.reject({ type: TAGGER.error.ajaxError, description: 'image load failed' });
       });
       img.crossOrigin = '';
-      img.src = 'panos/' + id + '.jpg';
+      img.src = db_pano_dir + id + '.jpg';
       return defer.promise();
    }
    cloud.get_data = get_data;
@@ -171,7 +170,7 @@ TAGGER.cloud = (function () {
       }).done( function (data) {
          var $pano = $(data).find("PhotoMetadata");
          if ($pano.length > 0) {
-            defer.resolve(read_pano_xml($pano));
+            defer.resolve(read_pano_json($pano));
          } else {
             defer.reject({ type: TAGGER.error.databaseError, description: 'no such panorama exists' });
          }
@@ -193,16 +192,12 @@ TAGGER.cloud = (function () {
       $.ajax({
          url: db_url,
          data: params,
-         dataType: 'xml'
+         dataType: 'json'
       }).done( function (data) {
-         var panos = [];
-         $(data).find("PhotoMetadata").each( function (i) {
-            panos[i] = read_pano_xml($(this));
-         });
-         if (panos.length > 0) {
-            defer.resolve(findClosestPanorama(lat, lon, panos));
+         if (!$.isEmptyObject(data)) {
+            defer.resolve(read_pano_json(data));
          } else {
-            defer.reject({ type: TAGGER.error.databaseError, description: 'no panoramas near this location' });
+            defer.reject({ type: TAGGER.error.databaseError, description: 'no panorama near this location' });
          }
       }).fail( function (jqXHR, textStatus) {
          defer.reject({ type: TAGGER.error.ajaxError, description: textStatus });
@@ -239,9 +234,9 @@ TAGGER.cloud = (function () {
          data: params,
          dataType: 'xml'
       }).done( function (data) {
-         var $pano = $(data).find("PhotoMetadata");
-         if ($pano.length > 0) {
-            defer.resolve(read_pano_xml($pano));
+         console.log(data);
+         if (!$.isEmptyObject(data)) {
+            defer.resolve(read_pano_json(data));
          } else {
             defer.reject({ type: TAGGER.error.databaseError, description: 'unable to save the panorama' });
          }

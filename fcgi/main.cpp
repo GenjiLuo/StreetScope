@@ -65,6 +65,8 @@ int main (int /*argc*/, const char** /*argv*/, char** /*envp*/) {
             dbserver.status(IO, CGI, failure);
          } else if (strcmp("metadata", command->getValue().c_str()) == 0) {
             dbserver.metadata(IO, CGI);
+         } else if (strcmp("metadata_and_tag_sets", command->getValue().c_str()) == 0) {
+            dbserver.metadataAndTagSets(IO, CGI);
          } else if (strcmp("panos_near", command->getValue().c_str()) == 0) {
             dbserver.panoramaNear(IO, CGI);
          //} else if (strcmp("panos_in_range", command->getValue().c_str()) == 0) {
@@ -73,9 +75,9 @@ int main (int /*argc*/, const char** /*argv*/, char** /*envp*/) {
             dbserver.panoramaByPanoid(IO, CGI);
          } else if (strcmp("download_pano", command->getValue().c_str()) == 0) {
             dbserver.downloadPanorama(IO, CGI);
+         //} else if (strcmp("insert_tag", command->getValue().c_str()) == 0) {
+            //dbserver.insertTag(IO, CGI);
          /*
-         } else if (strcmp("new_tag", command->getValue().c_str()) == 0) {
-            dbserver.newTag(IO, CGI);
          } else if (strcmp("remove_tag", command->getValue().c_str()) == 0) {
             dbserver.removeTag(IO, CGI);
          */
