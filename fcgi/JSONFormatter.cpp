@@ -49,6 +49,19 @@ mongo::BSONObj JSONFormatter::feature (mongo::BSONObj feature) {
 }
 
 //------------------------------------------------------------------------------
+mongo::BSONObj JSONFormatter::features (std::auto_ptr<mongo::DBClientCursor> features) {
+   mongo::BSONObjBuilder object;
+   mongo::BSONArrayBuilder array;
+
+   while (features->more()) {
+      array << feature(features->next());
+   }
+   object << "features" << array.arr();
+
+   return object.obj();
+}
+
+//------------------------------------------------------------------------------
 mongo::BSONObj JSONFormatter::tagset (mongo::BSONObj tagset) {
    return tagset;
 }
@@ -59,7 +72,7 @@ mongo::BSONObj JSONFormatter::tagsets (std::auto_ptr<mongo::DBClientCursor> tags
    mongo::BSONArrayBuilder array;
 
    while (tagsets->more()) {
-      array << tagsets->next();
+      array << tagset(tagsets->next());
    }
    object << "tagsets" << array.arr();
 

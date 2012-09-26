@@ -65,6 +65,8 @@ int main (int /*argc*/, const char** /*argv*/, char** /*envp*/) {
             dbserver.panorama(IO, CGI);
          } else if (strcmp("feature", command->getValue().c_str()) == 0) {
             dbserver.feature(IO, CGI);
+         } else if (strcmp("features", command->getValue().c_str()) == 0) {
+            dbserver.features(IO, CGI);
          } else if (strcmp("tagset", command->getValue().c_str()) == 0) {
             dbserver.tagset(IO, CGI);
          } else if (strcmp("panorama_tagsets", command->getValue().c_str()) == 0) {

@@ -65,6 +65,17 @@ ostream& DatabaseServer::feature (ostream& os, Cgicc const& cgi) {
 }
 
 //------------------------------------------------------------------------------
+ostream& DatabaseServer::features (ostream& os, Cgicc const& cgi) {
+   // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
+   printJSONHeader(os);
+   
+   // get response from the database
+   std::auto_ptr<mongo::DBClientCursor> features = _db.findFeatures();
+
+   return os << _json.features(features).jsonString();
+}
+
+//------------------------------------------------------------------------------
 ostream& DatabaseServer::tagset (ostream& os, Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
    printJSONHeader(os);

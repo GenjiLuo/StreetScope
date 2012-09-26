@@ -39,6 +39,9 @@ public:
    // cmd=feature, expects variable id
    std::ostream& feature (std::ostream& os, cgicc::Cgicc const& cgi);
 
+   // cmd=features, expects no variables
+   std::ostream& features (std::ostream& os, cgicc::Cgicc const& cgi);
+
    // cmd=tagset, expects variables panorama and feature
    std::ostream& tagset (std::ostream& os, cgicc::Cgicc const& cgi);
 

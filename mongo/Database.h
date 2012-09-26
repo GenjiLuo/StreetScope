@@ -89,6 +89,7 @@ public:
    mongo::BSONObj findPanorama (char const* panoid);
 
    mongo::BSONObj findFeature (mongo::OID featureID);
+   std::auto_ptr<mongo::DBClientCursor> findFeatures ();
 
    // returns the specified tagset
    mongo::BSONObj findTagSet (mongo::OID tagsetID);

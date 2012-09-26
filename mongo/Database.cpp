@@ -172,6 +172,11 @@ BSONObj Database::findFeature (OID featureID) {
 }
 
 //------------------------------------------------------------------------------
+std::auto_ptr<mongo::DBClientCursor> Database::findFeatures () {
+   return _mongo.query( featureCollection, BSONObj() );
+}
+
+//------------------------------------------------------------------------------
 BSONObj Database::findTagSet (mongo::OID tagsetID) {
    BSONObj query = BSON( "_id" << tagsetID );
 
