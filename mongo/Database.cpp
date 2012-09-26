@@ -106,10 +106,11 @@ void Database::insertEdge (OID panoramaID, Angle angle, char const* panoid) {
 
 //------------------------------------------------------------------------------
 OID Database::insertTag (OID panoramaID, OID featureID, AngleBox const& box) {
+   OID tagID;
    _mongo.update(
       tagsetCollection,
       BSON( "panorama" << panoramaID << "feature" << featureID ),
-      BSON( "$push" << BSON( "tags" << BSON( GENOID << "box" << BSON(
+      BSON( "$push" << BSON( "tags" << BSON( "_id" << tagID << "box" << BSON(
          "theta1" << box.theta1.rad()
          << "phi1" << box.phi1.rad()
          << "theta2" << box.theta2.rad()
@@ -117,7 +118,7 @@ OID Database::insertTag (OID panoramaID, OID featureID, AngleBox const& box) {
       ) ) ) ),
       true
    );
-   return OID();
+   return tagID;
 }
 
 //------------------------------------------------------------------------------
@@ -168,8 +169,47 @@ BSONObj Database::findFeature (OID featureID) {
 }
 
 //------------------------------------------------------------------------------
-std::auto_ptr<mongo::DBClientCursor> Database::findTagSets (mongo::OID panoramaID) {
+BSONObj Database::findTagSet (mongo::OID tagsetID) {
+   BSONObj query = BSON( "_id" << tagsetID );
+
+   auto_ptr<DBClientCursor> cursor = _mongo.query( tagsetCollection, query );
+   if (cursor->more()) {
+      return cursor->next();
+   }
+   return BSONObj();
+}
+
+//------------------------------------------------------------------------------
+BSONObj Database::findTagSet (mongo::OID panoramaID, mongo::OID featureID) {
+   BSONObj query = BSON( "panorama" << panoramaID << "feature" << featureID );
+
+   auto_ptr<DBClientCursor> cursor = _mongo.query( tagsetCollection, query );
+   if (cursor->more()) {
+      return cursor->next();
+   }
+   return BSONObj();
+}
+
+//------------------------------------------------------------------------------
+mongo::BSONObj Database::findTagSetWithTag (mongo::OID tagID) {
+   BSONObj query = BSON( "tags._id" << tagID );
+
+   auto_ptr<DBClientCursor> cursor = _mongo.query( tagsetCollection, query );
+   if (cursor->more()) {
+      return cursor->next();
+   }
+   return BSONObj();
+}
+
+//------------------------------------------------------------------------------
+std::auto_ptr<mongo::DBClientCursor> Database::findPanoramaTagSets (mongo::OID panoramaID) {
    BSONObj query = BSON( "panorama" << panoramaID );
+   return _mongo.query( tagsetCollection, query );
+}
+
+//------------------------------------------------------------------------------
+std::auto_ptr<mongo::DBClientCursor> Database::findFeatureTagSets (mongo::OID featureID) {
+   BSONObj query = BSON( "feature" << featureID );
    return _mongo.query( tagsetCollection, query );
 }
 

@@ -37,21 +37,50 @@ ostream& DatabaseServer::status (ostream& os, cgicc::Cgicc const& cgi, bool fail
    return os;
 }
 
+
 //------------------------------------------------------------------------------
-ostream& DatabaseServer::metadata (ostream& os, Cgicc const& cgi) {
+ostream& DatabaseServer::panorama (ostream& os, Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
    printJSONHeader(os);
    
    // extract info
-   PanoramaID panoramaID(cgi["panorama"]->getStrippedValue());
+   PanoramaID panoramaID(cgi["id"]->getStrippedValue());
 
    // get response from the database
    mongo::BSONObj panorama = _db.findPanorama(panoramaID);
-   return os << panorama.jsonString();
+   return os << _json.panorama(panorama).jsonString();
 }
 
 //------------------------------------------------------------------------------
-ostream& DatabaseServer::metadataAndTagSets (ostream& os, Cgicc const& cgi) {
+ostream& DatabaseServer::feature (ostream& os, Cgicc const& cgi) {
+   // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
+   printJSONHeader(os);
+   
+   // extract info
+   FeatureID featureID(cgi["id"]->getStrippedValue());
+
+   // get response from the database
+   mongo::BSONObj feature = _db.findFeature(featureID);
+   return os << _json.feature(feature).jsonString();
+}
+
+//------------------------------------------------------------------------------
+ostream& DatabaseServer::tagset (ostream& os, Cgicc const& cgi) {
+   // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
+   printJSONHeader(os);
+   
+   // extract arguments
+   PanoramaID panoramaID(cgi["panorama"]->getStrippedValue());
+   PanoramaID featureID(cgi["feature"]->getStrippedValue());
+
+   // get data from the database
+   mongo::BSONObj tagset = _db.findTagSet(panoramaID, featureID);
+
+   return os << _json.tagset(tagset).jsonString();
+}
+
+//------------------------------------------------------------------------------
+ostream& DatabaseServer::panoramaTagsets (ostream& os, Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
    printJSONHeader(os);
    
@@ -59,11 +88,11 @@ ostream& DatabaseServer::metadataAndTagSets (ostream& os, Cgicc const& cgi) {
    PanoramaID panoramaID(cgi["panorama"]->getStrippedValue());
 
    // get data from the database
-   mongo::BSONObj panorama = _db.findPanorama(panoramaID);
-   std::auto_ptr<mongo::DBClientCursor> tagsets = _db.findTagSets(panoramaID);
+   std::auto_ptr<mongo::DBClientCursor> tagsets = _db.findPanoramaTagSets(panoramaID);
 
-   return os << _json.metadataAndTagSets(panorama, tagsets).jsonString();
+   return os << _json.tagsets(tagsets).jsonString();
 }
+
 
 //------------------------------------------------------------------------------
 ostream& DatabaseServer::panoramaNear (ostream& os, Cgicc const& cgi) {
@@ -76,7 +105,7 @@ ostream& DatabaseServer::panoramaNear (ostream& os, Cgicc const& cgi) {
 
    // get response from the database
    mongo::BSONObj panorama = _db.findPanorama(Location(lon, lat));
-   return os << panorama.jsonString();
+   return os << _json.panorama(panorama).jsonString();
 }
 
 //------------------------------------------------------------------------------
@@ -115,7 +144,7 @@ ostream& DatabaseServer::panoramaByPanoid (ostream& os, Cgicc const& cgi) {
 
    // get response from the database
    mongo::BSONObj panorama = _db.findPanorama(panoid.c_str());
-   return os << panorama.jsonString();
+   return os << _json.panorama(panorama).jsonString();
 }
 
 //------------------------------------------------------------------------------
@@ -131,7 +160,7 @@ ostream& DatabaseServer::downloadPanorama (ostream& os, cgicc::Cgicc const& cgi)
    try {
       PanoramaID panorama = downer.savePano(panoid.c_str(), 3);
       mongo::BSONObj pObj = _db.findPanorama(panorama);
-      return os << pObj.jsonString();
+      return os << _json.panorama(pObj).jsonString();
    }
    catch (DownloadError error) {
       mongo::BSONObjBuilder result;
@@ -140,60 +169,58 @@ ostream& DatabaseServer::downloadPanorama (ostream& os, cgicc::Cgicc const& cgi)
    }
 }
 
-/*
 //------------------------------------------------------------------------------
 ostream& DatabaseServer::insertTag (ostream& os, cgicc::Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
    printJSONHeader(os);
    
    // extract info
-   string panorama = cgi["panorama"]->getValue();
-   string feature = cgi["feature"]->getValue();
+   PanoramaID panorama = PanoramaID(cgi["panorama"]->getStrippedValue());
+   FeatureID feature = FeatureID(cgi["feature"]->getStrippedValue());
    double t1 = cgi["t1"]->getDoubleValue();
    double p1 = cgi["p1"]->getDoubleValue();
    double t2 = cgi["t2"]->getDoubleValue();
    double p2 = cgi["p2"]->getDoubleValue();
+   AngleBox box;
+   box.theta1 = t1;
+   box.phi1 = p1;
+   box.theta2 = t2;
+   box.phi2 = p2;
  
    // add to the database
-   Tag* newtag = _db.insertTag(PanoramaID(panorama), FeatureID(feature), t1, p1, t2, p2);
-   pugi::xml_document doc;
-   pugi::xml_node results = prepareDocument(doc);
-   if (newtag) {
-      addResultStatus(results, true);
-      ostringstream tagstring;
-      tagstring << newtag->tagID();
-      pugi::xml_node tagid = results.append_child("TagID");
-      tagid.text() = tagstring.str().c_str();
-   } else {
-      addResultStatus(results, false);
-   }
-   doc.save(os);
+   TagSetID newtag = _db.insertTag(panorama, feature, box);
 
-   return os;
+   // see if we actually added anything
+   mongo::BSONObj tObj = _db.findTagSetWithTag(newtag);
+   if (!tObj.isEmpty()) {
+      return os << _json.tagset(tObj).jsonString();
+   } else {
+      mongo::BSONObjBuilder result;
+      result << "failure" << "true";
+      return os << result.obj().jsonString();
+   }
 }
 
 //------------------------------------------------------------------------------
 ostream& DatabaseServer::removeTag (ostream& os, cgicc::Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
-   printXMLHeader(os);
+   printJSONHeader(os);
    
    // extract info
-   unsigned tagid = getHexValue(cgi["tag_id"]);
+   TagID tagid = TagID(cgi["tag"]->getStrippedValue());
 
-   // remove specified tag from the database
-   bool result = _db.removeTag(TagID(tagid));
-   pugi::xml_document doc;
-   pugi::xml_node results = prepareDocument(doc);
-   if (result) {
-      addResultStatus(results, true);
+   // check that the tag exists
+   mongo::BSONObj tagset1 = _db.findTagSetWithTag(tagid);
+   if (!tagset1.isEmpty()) {
+      _db.removeTag(tagid);
+      mongo::BSONObj tagset2 = _db.findTagSet(tagset1["_id"].OID());
+      return os << _json.tagset(tagset2).jsonString();
    } else {
-      addResultStatus(results, false);
+      mongo::BSONObjBuilder result;
+      result << "failure" << "true";
+      return os << result.obj().jsonString();
    }
-   doc.save(os);
-
-   return os;
 }
-*/
 
 //------------------------------------------------------------------------------
 pugi::xml_node DatabaseServer::prepareDocument (pugi::xml_document& doc) {

@@ -31,6 +31,7 @@ char const* const tagsetCollection = "streetview.tagsets";
 // These are provided for convenience.
 typedef mongo::OID PanoramaID;
 typedef mongo::OID FeatureID;
+typedef mongo::OID TagSetID;
 typedef mongo::OID TagID;
 
 
@@ -91,7 +92,16 @@ public:
 
    mongo::BSONObj findFeature (mongo::OID featureID);
 
-   std::auto_ptr<mongo::DBClientCursor> findTagSets (mongo::OID panoramaID);
+   // returns the specified tagset
+   mongo::BSONObj findTagSet (mongo::OID tagsetID);
+   // returns the tagset for the given panorama and feature
+   mongo::BSONObj findTagSet (mongo::OID panoramaID, mongo::OID featureID);
+   // this returns the tagset containing the specified tag
+   mongo::BSONObj findTagSetWithTag (mongo::OID tagID);
+   // returns all tagsets of the given panorama
+   std::auto_ptr<mongo::DBClientCursor> findPanoramaTagSets (mongo::OID panoramaID);
+   // returns all tagsets of the given feature
+   std::auto_ptr<mongo::DBClientCursor> findFeatureTagSets (mongo::OID featureID);
 
 
    //---------------------------------------------------------------------------
@@ -99,7 +109,7 @@ public:
 
    void removePanorama (mongo::OID panoramaID);
    void removeFeature (mongo::OID featureID);
-   void removeTag (mongo::OID featureID);
+   void removeTag (mongo::OID tagID);
 
 };
 

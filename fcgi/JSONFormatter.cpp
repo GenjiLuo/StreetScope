@@ -16,7 +16,10 @@ using namespace mongo;
 //==============================================================================
 
 //------------------------------------------------------------------------------
-mongo::BSONObj JSONFormatter::metadata (mongo::BSONObj panorama) {
+mongo::BSONObj JSONFormatter::panorama (mongo::BSONObj panorama) {
+   return panorama;
+
+   /*
    BSONObjBuilder bpano;
 
    // add basic data
@@ -37,22 +40,29 @@ mongo::BSONObj JSONFormatter::metadata (mongo::BSONObj panorama) {
    // add edges
 
    return bpano.obj();
+   */
 }
 
 //------------------------------------------------------------------------------
-mongo::BSONObj JSONFormatter::tagSets (std::auto_ptr<mongo::DBClientCursor> tagsets) {
-   mongo::BSONObjBuilder bdata;
-
-   return bdata.obj();
+mongo::BSONObj JSONFormatter::feature (mongo::BSONObj feature) {
+   return feature;
 }
 
 //------------------------------------------------------------------------------
-mongo::BSONObj JSONFormatter::metadataAndTagSets (mongo::BSONObj panorama, std::auto_ptr<mongo::DBClientCursor> tagsets) {
-   mongo::BSONObjBuilder bdata;
-
-   bdata << "panorama" << metadata(panorama);
-
-   return bdata.obj();
+mongo::BSONObj JSONFormatter::tagset (mongo::BSONObj tagset) {
+   return tagset;
 }
 
+//------------------------------------------------------------------------------
+mongo::BSONObj JSONFormatter::tagsets (std::auto_ptr<mongo::DBClientCursor> tagsets) {
+   mongo::BSONObjBuilder object;
+   mongo::BSONArrayBuilder array;
+
+   while (tagsets->more()) {
+      array << tagsets->next();
+   }
+   object << "tagsets" << array.arr();
+
+   return object.obj();
+}
 

@@ -54,6 +54,27 @@ TAGGER.cloud = (function () {
       return pano;
    }
 
+   // parses feature json
+   function read_feature_json (json) {
+      console.log(json);
+
+      var feature = {
+         id: json._id.$oid,
+         name: json.name
+      };
+
+      return feature;
+   }
+
+   function read_tagset_json (json) {
+      console.log(json);
+
+      var tagset = {
+      };
+
+      return tagset;
+   }
+
 
    // Takes an id and a callback function, and calls
    // the callback with the requested pano object once the
