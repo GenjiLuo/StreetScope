@@ -24,12 +24,15 @@ bool Database::connect () {
       cout << "caught " << e.what() << endl;
       return false;
    }
-   return true;
-}
 
-//------------------------------------------------------------------------------
-void Database::setPanoramaDirectory (std::string const& panoDir) {
-   _panoDir = panoDir;
+   auto_ptr<DBClientCursor> cursor = _mongo.query( configCollection, BSONObj() );
+   if (cursor->more()) {
+      _panoDir = cursor->next()["panorama_dir"].String();
+   } else {
+      return false;
+   }
+
+   return true;
 }
 
 //------------------------------------------------------------------------------

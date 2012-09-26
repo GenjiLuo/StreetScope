@@ -13,7 +13,6 @@ int main() {
       cout << "Aborting.\n";
       return 0;
    }
-   database.setPanoramaDirectory("/home/erik/Code/streetview/database/data/panos/");
    database.ensureIndexes();
 
    Panorama pano;

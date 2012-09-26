@@ -37,13 +37,11 @@ int main (int /*argc*/, const char** /*argv*/, char** /*envp*/) {
    // Database Initialization
    bool failure = false;
    Database database;
-   if (!database.connect()) failure = true;
-   //database.setRootDir("/var/www/data/");
-   //database.setRootDir("/home/ubuntu/streetview/data/");
-   //database.setPanoDir("/var/www/panos/");
-   database.setPanoramaDirectory("/home/erik/Code/streetview/panoramas");
-   database.ensureIndexes();
-
+   if (database.connect()) {
+      database.ensureIndexes();
+   } else {
+      failure = true;
+   }
    DatabaseServer dbserver(database);
    
    // Session Data Initialization

@@ -22,6 +22,7 @@
 char const* const panoramaCollection = "streetview.panoramas";
 char const* const featureCollection = "streetview.features";
 char const* const tagsetCollection = "streetview.tagsets";
+char const* const configCollection = "streetview.config";
 
 
 //==============================================================================
@@ -51,10 +52,8 @@ public:
    // Basics
    
    // Initialization
-   // All of these methods must be called before any others.
    Database () {};
    bool connect ();
-   void setPanoramaDirectory (std::string const& panoDir);
 
    // Indexing
    void ensureIndexes ();
@@ -63,7 +62,6 @@ public:
    unsigned panoramas () { return _mongo.count(panoramaCollection); }
    unsigned features () { return _mongo.count(featureCollection); }
    unsigned tagsets () { return _mongo.count(tagsetCollection); }
-   //unsigned tags () const { return _tags; }
 
    // Accessors
    std::string panoramaDirectory () const { return _panoDir.string(); }
