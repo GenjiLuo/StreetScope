@@ -44,7 +44,11 @@ ostream& DatabaseServer::panorama (ostream& os, Cgicc const& cgi) {
    printJSONHeader(os);
    
    // extract info
-   PanoramaID panoramaID(cgi["id"]->getStrippedValue());
+   const_form_iterator id = cgi["id"];
+   if (id == cgi.getElements().end()) {
+      return mongo::BSONObj().jsonString();
+   }
+   PanoramaID panoramaID(id->getStrippedValue());
 
    // get response from the database
    mongo::BSONObj panorama = _db.findPanorama(panoramaID);
@@ -57,7 +61,11 @@ ostream& DatabaseServer::feature (ostream& os, Cgicc const& cgi) {
    printJSONHeader(os);
    
    // extract info
-   FeatureID featureID(cgi["id"]->getStrippedValue());
+   const_form_iterator id = cgi["id"];
+   if (id == cgi.getElements().end()) {
+      return mongo::BSONObj().jsonString();
+   }
+   FeatureID featureID(id->getStrippedValue());
 
    // get response from the database
    mongo::BSONObj feature = _db.findFeature(featureID);
@@ -81,8 +89,17 @@ ostream& DatabaseServer::tagset (ostream& os, Cgicc const& cgi) {
    printJSONHeader(os);
    
    // extract arguments
-   PanoramaID panoramaID(cgi["panorama"]->getStrippedValue());
-   PanoramaID featureID(cgi["feature"]->getStrippedValue());
+   const_form_iterator panorama = cgi["panorama"];
+   if (panorama == cgi.getElements().end()) {
+      return mongo::BSONObj().jsonString();
+   }
+   PanoramaID panoramaID(panorama->getStrippedValue());
+
+   const_form_iterator feature = cgi["feature"];
+   if (feature == cgi.getElements().end()) {
+      return mongo::BSONObj().jsonString();
+   }
+   FeatureID featureID(feature->getStrippedValue());
 
    // get data from the database
    mongo::BSONObj tagset = _db.findTagSet(panoramaID, featureID);
@@ -96,7 +113,11 @@ ostream& DatabaseServer::panoramaTagsets (ostream& os, Cgicc const& cgi) {
    printJSONHeader(os);
    
    // extract arguments
-   PanoramaID panoramaID(cgi["panorama"]->getStrippedValue());
+   const_form_iterator panorama = cgi["panorama"];
+   if (panorama == cgi.getElements().end()) {
+      return mongo::BSONObj().jsonString();
+   }
+   PanoramaID panoramaID(panorama->getStrippedValue());
 
    // get data from the database
    std::auto_ptr<mongo::DBClientCursor> tagsets = _db.findPanoramaTagSets(panoramaID);
@@ -111,8 +132,17 @@ ostream& DatabaseServer::panoramaNear (ostream& os, Cgicc const& cgi) {
    printJSONHeader(os);
    
    // extract info
-   double lat = cgi["lat"]->getDoubleValue();
-   double lon = cgi["lon"]->getDoubleValue();
+   const_form_iterator latform = cgi["lat"];
+   if (latform == cgi.getElements().end()) {
+      return mongo::BSONObj().jsonString();
+   }
+   double lat = latform->getDoubleValue();
+
+   const_form_iterator lonform = cgi["lon"];
+   if (lonform == cgi.getElements().end()) {
+      return mongo::BSONObj().jsonString();
+   }
+   double lon = lonform->getDoubleValue();
 
    // get response from the database
    mongo::BSONObj panorama = _db.findPanorama(Location(lon, lat));
@@ -149,9 +179,11 @@ ostream& DatabaseServer::panoramaByPanoid (ostream& os, Cgicc const& cgi) {
    printJSONHeader(os);
    
    // extract info
-   //double lat = cgi["lat"]->getDoubleValue();
-   //double lon = cgi["lon"]->getDoubleValue();
-   string panoid = cgi["pano_id"]->getValue();
+   const_form_iterator panoform = cgi["pano_id"];
+   if (panoform == cgi.getElements().end()) {
+      return mongo::BSONObj().jsonString();
+   }
+   string panoid = panoform->getStrippedValue();
 
    // get response from the database
    mongo::BSONObj panorama = _db.findPanorama(panoid.c_str());
@@ -164,7 +196,11 @@ ostream& DatabaseServer::downloadPanorama (ostream& os, cgicc::Cgicc const& cgi)
    printJSONHeader(os);
    
    // extract info
-   string panoid = cgi["pano_id"]->getValue();
+   const_form_iterator panoform = cgi["pano_id"];
+   if (panoform == cgi.getElements().end()) {
+      return mongo::BSONObj().jsonString();
+   }
+   string panoid = panoform->getStrippedValue();
 
    // download the panorama
    ImageDownloader downer(&_db, 100000);
@@ -186,12 +222,42 @@ ostream& DatabaseServer::insertTag (ostream& os, cgicc::Cgicc const& cgi) {
    printJSONHeader(os);
    
    // extract info
-   PanoramaID panorama = PanoramaID(cgi["panorama"]->getStrippedValue());
-   FeatureID feature = FeatureID(cgi["feature"]->getStrippedValue());
-   double t1 = cgi["t1"]->getDoubleValue();
-   double p1 = cgi["p1"]->getDoubleValue();
-   double t2 = cgi["t2"]->getDoubleValue();
-   double p2 = cgi["p2"]->getDoubleValue();
+   const_form_iterator panorama = cgi["panorama"];
+   if (panorama == cgi.getElements().end()) {
+      return mongo::BSONObj().jsonString();
+   }
+   PanoramaID panoramaID(panorama->getStrippedValue());
+
+   const_form_iterator feature = cgi["feature"];
+   if (feature == cgi.getElements().end()) {
+      return mongo::BSONObj().jsonString();
+   }
+   FeatureID featureID(feature->getStrippedValue());
+
+   const_form_iterator t1form = cgi["t1"];
+   if (t1form == cgi.getElements().end()) {
+      return mongo::BSONObj().jsonString();
+   }
+   double t1 = t1form->getDoubleValue();
+
+   const_form_iterator p1form = cgi["p1"];
+   if (p1form == cgi.getElements().end()) {
+      return mongo::BSONObj().jsonString();
+   }
+   double p1 = p1form->getDoubleValue();
+
+   const_form_iterator t2form = cgi["t2"];
+   if (t2form == cgi.getElements().end()) {
+      return mongo::BSONObj().jsonString();
+   }
+   double t2 = t2form->getDoubleValue();
+
+   const_form_iterator p2form = cgi["p2"];
+   if (p2form == cgi.getElements().end()) {
+      return mongo::BSONObj().jsonString();
+   }
+   double p2 = p2form->getDoubleValue();
+
    AngleBox box;
    box.theta1 = t1;
    box.phi1 = p1;
@@ -199,7 +265,7 @@ ostream& DatabaseServer::insertTag (ostream& os, cgicc::Cgicc const& cgi) {
    box.phi2 = p2;
  
    // add to the database
-   TagSetID newtag = _db.insertTag(panorama, feature, box);
+   TagSetID newtag = _db.insertTag(panoramaID, featureID, box);
 
    // see if we actually added anything
    mongo::BSONObj tObj = _db.findTagSetWithTag(newtag);
@@ -218,7 +284,11 @@ ostream& DatabaseServer::removeTag (ostream& os, cgicc::Cgicc const& cgi) {
    printJSONHeader(os);
    
    // extract info
-   TagID tagid = TagID(cgi["tag"]->getStrippedValue());
+   const_form_iterator tag = cgi["tag"];
+   if (tag == cgi.getElements().end()) {
+      return mongo::BSONObj().jsonString();
+   }
+   TagID tagid(tag->getStrippedValue());
 
    // check that the tag exists
    mongo::BSONObj tagset1 = _db.findTagSetWithTag(tagid);
