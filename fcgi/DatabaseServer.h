@@ -58,7 +58,7 @@ public:
    // cmd=panos_in_range, expects variables lat1, lon1, lat2, lon2
    //std::ostream& panosInRange (std::ostream& os, cgicc::Cgicc const& cgi);
 
-   // cmd=pano_id_near, expects variables lat, lon, and pano_id
+   // cmd=panorama_by_panoid, expects variable panoid
    std::ostream& panoramaByPanoid (std::ostream& os, cgicc::Cgicc const& cgi);
 
 

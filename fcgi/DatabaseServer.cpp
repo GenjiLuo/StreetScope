@@ -179,7 +179,7 @@ ostream& DatabaseServer::panoramaByPanoid (ostream& os, Cgicc const& cgi) {
    printJSONHeader(os);
    
    // extract info
-   const_form_iterator panoform = cgi["pano_id"];
+   const_form_iterator panoform = cgi["panoid"];
    if (panoform == cgi.getElements().end()) {
       return os << mongo::BSONObj().jsonString();
    }

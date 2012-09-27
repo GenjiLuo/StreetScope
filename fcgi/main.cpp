@@ -75,7 +75,7 @@ int main (int /*argc*/, const char** /*argv*/, char** /*envp*/) {
             dbserver.panoramaNear(IO, CGI);
          //} else if (strcmp("panos_in_range", command->getValue().c_str()) == 0) {
          //   dbserver.panosInRange(IO, CGI);
-         } else if (strcmp("pano_id_near", command->getValue().c_str()) == 0) {
+         } else if (strcmp("panorama_by_panoid", command->getValue().c_str()) == 0) {
             dbserver.panoramaByPanoid(IO, CGI);
          } else if (strcmp("download_pano", command->getValue().c_str()) == 0) {
             dbserver.downloadPanorama(IO, CGI);
