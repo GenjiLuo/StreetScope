@@ -26,8 +26,8 @@ int main() {
    pano.tiltYaw.a = .2;
    pano.tiltPitch.a = .3;
 
-   Feature feature;
-   feature.name = "person";
+   //Feature feature;
+   //feature.name = "person";
 
    AngleBox tag1;
    tag1.theta1.a = 1.1;
@@ -40,15 +40,24 @@ int main() {
    loc1.lat = 10;
 
    cout << "panos: " << database.panoramas() << '\n';
+   cout << "panorama directory: " << database.panoramaDirectory() << '\n';
 
    //database.insertFeature(feature);
-   mongo::OID newid = database.insertPanorama(pano);
+   //mongo::OID newid = database.insertPanorama(pano);
    //database.insertEdge(newid, 0.123, "edge edge");
    //database.insertTag(OID("50368a87f3f742496dc124c7"), OID("50367f136dd024d9a1d5072b"), tag1);
-   cout << database.panoramaPath(newid) << '\n';
-   database.findPanorama(loc1);
 
-   cout << "panos: " << database.panoramas() << '\n';
+   std::string idstring = "50649538a74375bd11776d9f";
+   PanoramaID idobj(idstring);
+   cout << "Looking for a panorama with id " << idstring << ".\n";
+   cout << database.findPanorama(idobj).jsonString() << '\n';
+
+   Location testloc(-71.1166, 42.378741);
+   cout << "Looking for a panorama near " << testloc.lat << ", " << testloc.lon << ".\n";
+   cout << database.findPanorama(testloc).jsonString() << '\n';
+
+   cout << "Empty object looks like: \"" << BSONObj().jsonString() << "\".\n";
+
    //cout << "new id: " << newid.str() << '\n';
 
 
