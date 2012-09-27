@@ -46,7 +46,7 @@ ostream& DatabaseServer::panorama (ostream& os, Cgicc const& cgi) {
    // extract info
    const_form_iterator id = cgi["id"];
    if (id == cgi.getElements().end()) {
-      return mongo::BSONObj().jsonString();
+      return os << mongo::BSONObj().jsonString();
    }
    PanoramaID panoramaID(id->getStrippedValue());
 
@@ -63,7 +63,7 @@ ostream& DatabaseServer::feature (ostream& os, Cgicc const& cgi) {
    // extract info
    const_form_iterator id = cgi["id"];
    if (id == cgi.getElements().end()) {
-      return mongo::BSONObj().jsonString();
+      return os << mongo::BSONObj().jsonString();
    }
    FeatureID featureID(id->getStrippedValue());
 
@@ -91,13 +91,13 @@ ostream& DatabaseServer::tagset (ostream& os, Cgicc const& cgi) {
    // extract arguments
    const_form_iterator panorama = cgi["panorama"];
    if (panorama == cgi.getElements().end()) {
-      return mongo::BSONObj().jsonString();
+      return os << mongo::BSONObj().jsonString();
    }
    PanoramaID panoramaID(panorama->getStrippedValue());
 
    const_form_iterator feature = cgi["feature"];
    if (feature == cgi.getElements().end()) {
-      return mongo::BSONObj().jsonString();
+      return os << mongo::BSONObj().jsonString();
    }
    FeatureID featureID(feature->getStrippedValue());
 
@@ -115,7 +115,7 @@ ostream& DatabaseServer::panoramaTagsets (ostream& os, Cgicc const& cgi) {
    // extract arguments
    const_form_iterator panorama = cgi["panorama"];
    if (panorama == cgi.getElements().end()) {
-      return mongo::BSONObj().jsonString();
+      return os << mongo::BSONObj().jsonString();
    }
    PanoramaID panoramaID(panorama->getStrippedValue());
 
@@ -134,13 +134,13 @@ ostream& DatabaseServer::panoramaNear (ostream& os, Cgicc const& cgi) {
    // extract info
    const_form_iterator latform = cgi["lat"];
    if (latform == cgi.getElements().end()) {
-      return mongo::BSONObj().jsonString();
+      return os << mongo::BSONObj().jsonString();
    }
    double lat = latform->getDoubleValue();
 
    const_form_iterator lonform = cgi["lon"];
    if (lonform == cgi.getElements().end()) {
-      return mongo::BSONObj().jsonString();
+      return os << mongo::BSONObj().jsonString();
    }
    double lon = lonform->getDoubleValue();
 
@@ -181,7 +181,7 @@ ostream& DatabaseServer::panoramaByPanoid (ostream& os, Cgicc const& cgi) {
    // extract info
    const_form_iterator panoform = cgi["pano_id"];
    if (panoform == cgi.getElements().end()) {
-      return mongo::BSONObj().jsonString();
+      return os << mongo::BSONObj().jsonString();
    }
    string panoid = panoform->getStrippedValue();
 
@@ -198,7 +198,7 @@ ostream& DatabaseServer::downloadPanorama (ostream& os, cgicc::Cgicc const& cgi)
    // extract info
    const_form_iterator panoform = cgi["pano_id"];
    if (panoform == cgi.getElements().end()) {
-      return mongo::BSONObj().jsonString();
+      return os << mongo::BSONObj().jsonString();
    }
    string panoid = panoform->getStrippedValue();
 
@@ -224,37 +224,37 @@ ostream& DatabaseServer::insertTag (ostream& os, cgicc::Cgicc const& cgi) {
    // extract info
    const_form_iterator panorama = cgi["panorama"];
    if (panorama == cgi.getElements().end()) {
-      return mongo::BSONObj().jsonString();
+      return os << mongo::BSONObj().jsonString();
    }
    PanoramaID panoramaID(panorama->getStrippedValue());
 
    const_form_iterator feature = cgi["feature"];
    if (feature == cgi.getElements().end()) {
-      return mongo::BSONObj().jsonString();
+      return os << mongo::BSONObj().jsonString();
    }
    FeatureID featureID(feature->getStrippedValue());
 
    const_form_iterator t1form = cgi["t1"];
    if (t1form == cgi.getElements().end()) {
-      return mongo::BSONObj().jsonString();
+      return os << mongo::BSONObj().jsonString();
    }
    double t1 = t1form->getDoubleValue();
 
    const_form_iterator p1form = cgi["p1"];
    if (p1form == cgi.getElements().end()) {
-      return mongo::BSONObj().jsonString();
+      return os << mongo::BSONObj().jsonString();
    }
    double p1 = p1form->getDoubleValue();
 
    const_form_iterator t2form = cgi["t2"];
    if (t2form == cgi.getElements().end()) {
-      return mongo::BSONObj().jsonString();
+      return os << mongo::BSONObj().jsonString();
    }
    double t2 = t2form->getDoubleValue();
 
    const_form_iterator p2form = cgi["p2"];
    if (p2form == cgi.getElements().end()) {
-      return mongo::BSONObj().jsonString();
+      return os << mongo::BSONObj().jsonString();
    }
    double p2 = p2form->getDoubleValue();
 
@@ -286,7 +286,7 @@ ostream& DatabaseServer::removeTag (ostream& os, cgicc::Cgicc const& cgi) {
    // extract info
    const_form_iterator tag = cgi["tag"];
    if (tag == cgi.getElements().end()) {
-      return mongo::BSONObj().jsonString();
+      return os << mongo::BSONObj().jsonString();
    }
    TagID tagid(tag->getStrippedValue());
 
