@@ -56,6 +56,46 @@ ostream& DatabaseServer::panorama (ostream& os, Cgicc const& cgi) {
 }
 
 //------------------------------------------------------------------------------
+ostream& DatabaseServer::panoramaNear (ostream& os, Cgicc const& cgi) {
+   // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
+   printJSONHeader(os);
+   
+   // extract info
+   const_form_iterator latform = cgi["lat"];
+   if (latform == cgi.getElements().end()) {
+      return os << mongo::BSONObj().jsonString();
+   }
+   double lat = latform->getDoubleValue();
+
+   const_form_iterator lonform = cgi["lon"];
+   if (lonform == cgi.getElements().end()) {
+      return os << mongo::BSONObj().jsonString();
+   }
+   double lon = lonform->getDoubleValue();
+
+   // get response from the database
+   mongo::BSONObj panorama = _db.findPanorama(Location(lon, lat));
+   return os << _json.panorama(panorama).jsonString();
+}
+
+//------------------------------------------------------------------------------
+ostream& DatabaseServer::panoramaByPanoid (ostream& os, Cgicc const& cgi) {
+   // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
+   printJSONHeader(os);
+   
+   // extract info
+   const_form_iterator panoform = cgi["panoid"];
+   if (panoform == cgi.getElements().end()) {
+      return os << mongo::BSONObj().jsonString();
+   }
+   string panoid = panoform->getStrippedValue();
+
+   // get response from the database
+   mongo::BSONObj panorama = _db.findPanorama(panoid.c_str());
+   return os << _json.panorama(panorama).jsonString();
+}
+
+//------------------------------------------------------------------------------
 ostream& DatabaseServer::feature (ostream& os, Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
    printJSONHeader(os);
@@ -84,7 +124,7 @@ ostream& DatabaseServer::features (ostream& os, Cgicc const& cgi) {
 }
 
 //------------------------------------------------------------------------------
-ostream& DatabaseServer::tagset (ostream& os, Cgicc const& cgi) {
+ostream& DatabaseServer::tags (ostream& os, Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
    printJSONHeader(os);
    
@@ -102,92 +142,9 @@ ostream& DatabaseServer::tagset (ostream& os, Cgicc const& cgi) {
    FeatureID featureID(feature->getStrippedValue());
 
    // get data from the database
-   mongo::BSONObj tagset = _db.findTagSet(panoramaID, featureID);
+   std::auto_ptr<mongo::DBClientCursor> tags = _db.findTags(panoramaID, featureID);
 
-   return os << _json.tagset(tagset).jsonString();
-}
-
-//------------------------------------------------------------------------------
-ostream& DatabaseServer::panoramaTagsets (ostream& os, Cgicc const& cgi) {
-   // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
-   printJSONHeader(os);
-   
-   // extract arguments
-   const_form_iterator panorama = cgi["panorama"];
-   if (panorama == cgi.getElements().end()) {
-      return os << mongo::BSONObj().jsonString();
-   }
-   PanoramaID panoramaID(panorama->getStrippedValue());
-
-   // get data from the database
-   std::auto_ptr<mongo::DBClientCursor> tagsets = _db.findPanoramaTagSets(panoramaID);
-
-   return os << _json.tagsets(tagsets).jsonString();
-}
-
-
-//------------------------------------------------------------------------------
-ostream& DatabaseServer::panoramaNear (ostream& os, Cgicc const& cgi) {
-   // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
-   printJSONHeader(os);
-   
-   // extract info
-   const_form_iterator latform = cgi["lat"];
-   if (latform == cgi.getElements().end()) {
-      return os << mongo::BSONObj().jsonString();
-   }
-   double lat = latform->getDoubleValue();
-
-   const_form_iterator lonform = cgi["lon"];
-   if (lonform == cgi.getElements().end()) {
-      return os << mongo::BSONObj().jsonString();
-   }
-   double lon = lonform->getDoubleValue();
-
-   // get response from the database
-   mongo::BSONObj panorama = _db.findPanorama(Location(lon, lat));
-   return os << _json.panorama(panorama).jsonString();
-}
-
-//------------------------------------------------------------------------------
-/*
-ostream& DatabaseServer::panosInRange (ostream& os, Cgicc const& cgi) {
-   // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
-   printXMLHeader(os);
-   
-   // extract arguments
-   float lat1 = static_cast<float>(cgi["lat1"]->getDoubleValue());
-   float lon1 = static_cast<float>(cgi["lon1"]->getDoubleValue());
-   float lat2 = static_cast<float>(cgi["lat2"]->getDoubleValue());
-   float lon2 = static_cast<float>(cgi["lon2"]->getDoubleValue());
-
-   // get response from the database, format as xml
-   pugi::xml_document doc;
-   pugi::xml_node results = prepareDocument(doc);
-   LinkedList<PhotoKey>* photos = _db.findPanos(lat1, lon1, lat2, lon2);
-   _xml.photoMetadataXML(results, photos);
-   doc.save(os);
-   delete photos;
-   
-   return os;
-}
-*/
-
-//------------------------------------------------------------------------------
-ostream& DatabaseServer::panoramaByPanoid (ostream& os, Cgicc const& cgi) {
-   // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
-   printJSONHeader(os);
-   
-   // extract info
-   const_form_iterator panoform = cgi["panoid"];
-   if (panoform == cgi.getElements().end()) {
-      return os << mongo::BSONObj().jsonString();
-   }
-   string panoid = panoform->getStrippedValue();
-
-   // get response from the database
-   mongo::BSONObj panorama = _db.findPanorama(panoid.c_str());
-   return os << _json.panorama(panorama).jsonString();
+   return os << _json.tags(tags).jsonString();
 }
 
 //------------------------------------------------------------------------------
@@ -196,7 +153,7 @@ ostream& DatabaseServer::downloadPanorama (ostream& os, cgicc::Cgicc const& cgi)
    printJSONHeader(os);
    
    // extract info
-   const_form_iterator panoform = cgi["pano_id"];
+   const_form_iterator panoform = cgi["panoid"];
    if (panoform == cgi.getElements().end()) {
       return os << mongo::BSONObj().jsonString();
    }
@@ -268,9 +225,9 @@ ostream& DatabaseServer::insertTag (ostream& os, cgicc::Cgicc const& cgi) {
    TagSetID newtag = _db.insertTag(panoramaID, featureID, box);
 
    // see if we actually added anything
-   mongo::BSONObj tObj = _db.findTagSetWithTag(newtag);
+   mongo::BSONObj tObj = _db.findTag(newtag);
    if (!tObj.isEmpty()) {
-      return os << _json.tagset(tObj).jsonString();
+      return os << _json.tag(tObj).jsonString();
    } else {
       mongo::BSONObjBuilder result;
       result << "failure" << "true";
@@ -284,18 +241,19 @@ ostream& DatabaseServer::removeTag (ostream& os, cgicc::Cgicc const& cgi) {
    printJSONHeader(os);
    
    // extract info
-   const_form_iterator tag = cgi["tag"];
-   if (tag == cgi.getElements().end()) {
+   const_form_iterator id = cgi["id"];
+   if (id == cgi.getElements().end()) {
       return os << mongo::BSONObj().jsonString();
    }
-   TagID tagid(tag->getStrippedValue());
+   TagID tagid(id->getStrippedValue());
 
    // check that the tag exists
-   mongo::BSONObj tagset1 = _db.findTagSetWithTag(tagid);
-   if (!tagset1.isEmpty()) {
+   mongo::BSONObj tag = _db.findTag(tagid);
+   if (!tag.isEmpty()) {
       _db.removeTag(tagid);
-      mongo::BSONObj tagset2 = _db.findTagSet(tagset1["_id"].OID());
-      return os << _json.tagset(tagset2).jsonString();
+      mongo::BSONObjBuilder result;
+      result << "success" << "true";
+      return os << result.obj().jsonString();
    } else {
       mongo::BSONObjBuilder result;
       result << "failure" << "true";
@@ -310,24 +268,4 @@ pugi::xml_node DatabaseServer::prepareDocument (pugi::xml_document& doc) {
    decl.append_attribute("encoding") = "UTF-8";
    return doc.append_child("Results");
 }
-
-/*
-//------------------------------------------------------------------------------
-void DatabaseServer::addResultStatus (pugi::xml_node& results, bool success) {
-   pugi::xml_node status = results.append_child("Status");
-   if (success) {
-      status.text() = "success";
-   } else {
-      status.text() = "failure";
-   }
-}
-
-//------------------------------------------------------------------------------
-unsigned DatabaseServer::getHexValue (cgicc::const_form_iterator const& formentry) {
-   stringstream hexstring(formentry->getStrippedValue());
-   unsigned intval;
-   hexstring >> hex >> intval;
-   return intval;
-}
-*/
 

@@ -39,9 +39,9 @@ bool Database::connect () {
 void Database::ensureIndexes () {
    _mongo.ensureIndex(panoramaCollection, BSON("location" << "2d"));
    _mongo.ensureIndex(panoramaCollection, BSON("panoid" << 1));
-   _mongo.ensureIndex(tagsetCollection, BSON("panorama" << 1 << "feature" << 1));
-   _mongo.ensureIndex(tagsetCollection, BSON("feature" << 1));
-   _mongo.ensureIndex(tagsetCollection, BSON("tags._id" << 1));
+   _mongo.ensureIndex(tagCollection, BSON("panorama" << 1 << "feature" << 1));
+   _mongo.ensureIndex(tagCollection, BSON("feature" << 1));
+   _mongo.ensureIndex(tagCollection, BSON("tagsets" << 1));
 }
 
 //------------------------------------------------------------------------------
@@ -56,13 +56,14 @@ OID Database::insertPanorama (Panorama const& panorama) {
    // make sure we don't have this panorama already
    // ...
 
-   // construct the BSON object
+   // declare BSON Builders
    BSONObjBuilder pano;
    BSONArrayBuilder location;
    BSONArrayBuilder originalLocation;
    BSONObjBuilder orientation;
    BSONArrayBuilder edges;
 
+   // build subobjects
    location << panorama.location.lon;
    location << panorama.location.lat;
    originalLocation << panorama.originalLocation.lon;
@@ -74,6 +75,7 @@ OID Database::insertPanorama (Panorama const& panorama) {
       edges << BSON( "panoid" << itr->panoid << "yaw" << itr->angle.rad() );
    }
 
+   // build the panorama
    pano.genOID();
    pano << "insertDate" << DATENOW;
    pano << "captureDate" << Date_t(panorama.captureDate);
@@ -83,6 +85,7 @@ OID Database::insertPanorama (Panorama const& panorama) {
    pano << "orientation" << orientation.obj();
    pano << "edges" << edges.arr();
 
+   // insert
    BSONObj p = pano.obj();
    _mongo.insert(panoramaCollection, p);
    return p.getField("_id").OID();
@@ -90,9 +93,12 @@ OID Database::insertPanorama (Panorama const& panorama) {
 
 //------------------------------------------------------------------------------
 OID Database::insertFeature (Feature const& feature) {
+   // build the feature
    BSONObjBuilder feat;
    feat.genOID();
    feat << "name" << feature.name;
+
+   // insert
    BSONObj f = feat.obj();
    _mongo.insert(featureCollection, f);
    return f.getField("_id").OID();
@@ -109,19 +115,25 @@ void Database::insertEdge (OID panoramaID, Angle angle, char const* panoid) {
 
 //------------------------------------------------------------------------------
 OID Database::insertTag (OID panoramaID, OID featureID, AngleBox const& box) {
-   OID tagID;
-   _mongo.update(
-      tagsetCollection,
-      BSON( "panorama" << panoramaID << "feature" << featureID ),
-      BSON( "$push" << BSON( "tags" << BSON( "_id" << tagID << "box" << BSON(
+   // build the tag
+   BSONObjBuilder tag;
+   tag.genOID();
+   tag << "panorama" << panoramaID;
+   tag << "feature" << featureID;
+   tag << "tagsets" << BSONArray();
+   tag << "insertDate" << DATENOW;
+   tag << "box" << BSON(
          "theta1" << box.theta1.rad()
-         << "phi1" << box.phi1.rad()
-         << "theta2" << box.theta2.rad()
-         << "phi2" << box.phi2.rad()
-      ) ) ) ),
-      true
+      << "phi1"   << box.phi1.rad()
+      << "theta2" << box.theta2.rad()
+      << "phi2"   << box.phi2.rad()
    );
-   return tagID;
+
+
+   // insert
+   BSONObj t = tag.obj();
+   _mongo.insert(tagCollection, t);
+   return t.getField("_id").OID();
 }
 
 //------------------------------------------------------------------------------
@@ -177,10 +189,10 @@ std::auto_ptr<mongo::DBClientCursor> Database::findFeatures () {
 }
 
 //------------------------------------------------------------------------------
-BSONObj Database::findTagSet (mongo::OID tagsetID) {
-   BSONObj query = BSON( "_id" << tagsetID );
+BSONObj Database::findTag (mongo::OID tagID) {
+   BSONObj query = BSON( "_id" << tagID );
 
-   auto_ptr<DBClientCursor> cursor = _mongo.query( tagsetCollection, query );
+   auto_ptr<DBClientCursor> cursor = _mongo.query( tagCollection, query );
    if (cursor->more()) {
       return cursor->next();
    }
@@ -188,37 +200,21 @@ BSONObj Database::findTagSet (mongo::OID tagsetID) {
 }
 
 //------------------------------------------------------------------------------
-BSONObj Database::findTagSet (mongo::OID panoramaID, mongo::OID featureID) {
-   BSONObj query = BSON( "panorama" << panoramaID << "feature" << featureID );
-
-   auto_ptr<DBClientCursor> cursor = _mongo.query( tagsetCollection, query );
-   if (cursor->more()) {
-      return cursor->next();
-   }
-   return BSONObj();
-}
-
-//------------------------------------------------------------------------------
-mongo::BSONObj Database::findTagSetWithTag (mongo::OID tagID) {
-   BSONObj query = BSON( "tags._id" << tagID );
-
-   auto_ptr<DBClientCursor> cursor = _mongo.query( tagsetCollection, query );
-   if (cursor->more()) {
-      return cursor->next();
-   }
-   return BSONObj();
-}
-
-//------------------------------------------------------------------------------
-std::auto_ptr<mongo::DBClientCursor> Database::findPanoramaTagSets (mongo::OID panoramaID) {
+auto_ptr<DBClientCursor> Database::findTagsByPanorama (mongo::OID panoramaID) {
    BSONObj query = BSON( "panorama" << panoramaID );
-   return _mongo.query( tagsetCollection, query );
+   return _mongo.query( tagCollection, query );
 }
 
 //------------------------------------------------------------------------------
-std::auto_ptr<mongo::DBClientCursor> Database::findFeatureTagSets (mongo::OID featureID) {
+auto_ptr<DBClientCursor> Database::findTagsByFeature (mongo::OID featureID) {
    BSONObj query = BSON( "feature" << featureID );
-   return _mongo.query( tagsetCollection, query );
+   return _mongo.query( tagCollection, query );
+}
+
+//------------------------------------------------------------------------------
+auto_ptr<DBClientCursor> Database::findTags (mongo::OID panoramaID, mongo::OID featureID) {
+   BSONObj query = BSON( "panorama" << panoramaID << "feature" << featureID );
+   return _mongo.query( tagCollection, query );
 }
 
 //------------------------------------------------------------------------------
@@ -233,10 +229,6 @@ void Database::removeFeature (mongo::OID featureID) {
 
 //------------------------------------------------------------------------------
 void Database::removeTag (mongo::OID tagID) {
-   _mongo.update(
-      tagsetCollection,
-      BSON( "tags._id" << tagID ),
-      BSON( "$pull" << BSON( "tags" << BSON( "_id" << tagID ) ) )
-   );
+   _mongo.remove( tagCollection, BSON( "_id" << tagID ) );
 }
 

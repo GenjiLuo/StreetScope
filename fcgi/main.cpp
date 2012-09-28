@@ -37,9 +37,7 @@ int main (int /*argc*/, const char** /*argv*/, char** /*envp*/) {
    // Database Initialization
    bool failure = false;
    Database database;
-   if (database.connect()) {
-      database.ensureIndexes();
-   } else {
+   if (!database.connect()) {
       failure = true;
    }
    DatabaseServer dbserver(database);
@@ -63,20 +61,16 @@ int main (int /*argc*/, const char** /*argv*/, char** /*envp*/) {
             dbserver.status(IO, CGI, failure);
          } else if (strcmp("panorama", command->getValue().c_str()) == 0) {
             dbserver.panorama(IO, CGI);
+         } else if (strcmp("panorama_near", command->getValue().c_str()) == 0) {
+            dbserver.panoramaNear(IO, CGI);
+         } else if (strcmp("panorama_by_panoid", command->getValue().c_str()) == 0) {
+            dbserver.panoramaByPanoid(IO, CGI);
          } else if (strcmp("feature", command->getValue().c_str()) == 0) {
             dbserver.feature(IO, CGI);
          } else if (strcmp("features", command->getValue().c_str()) == 0) {
             dbserver.features(IO, CGI);
-         } else if (strcmp("tagset", command->getValue().c_str()) == 0) {
-            dbserver.tagset(IO, CGI);
-         } else if (strcmp("panorama_tagsets", command->getValue().c_str()) == 0) {
-            dbserver.panoramaTagsets(IO, CGI);
-         } else if (strcmp("panos_near", command->getValue().c_str()) == 0) {
-            dbserver.panoramaNear(IO, CGI);
-         //} else if (strcmp("panos_in_range", command->getValue().c_str()) == 0) {
-         //   dbserver.panosInRange(IO, CGI);
-         } else if (strcmp("panorama_by_panoid", command->getValue().c_str()) == 0) {
-            dbserver.panoramaByPanoid(IO, CGI);
+         } else if (strcmp("tags", command->getValue().c_str()) == 0) {
+            dbserver.tags(IO, CGI);
          } else if (strcmp("download_pano", command->getValue().c_str()) == 0) {
             dbserver.downloadPanorama(IO, CGI);
          } else if (strcmp("insert_tag", command->getValue().c_str()) == 0) {

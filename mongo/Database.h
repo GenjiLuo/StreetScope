@@ -21,6 +21,7 @@
 
 char const* const panoramaCollection = "streetview.panoramas";
 char const* const featureCollection = "streetview.features";
+char const* const tagCollection = "streetview.tag";
 char const* const tagsetCollection = "streetview.tagsets";
 char const* const configCollection = "streetview.config";
 
@@ -32,8 +33,8 @@ char const* const configCollection = "streetview.config";
 // These are provided for convenience.
 typedef mongo::OID PanoramaID;
 typedef mongo::OID FeatureID;
-typedef mongo::OID TagSetID;
 typedef mongo::OID TagID;
+typedef mongo::OID TagSetID;
 
 
 //==============================================================================
@@ -91,16 +92,10 @@ public:
    mongo::BSONObj findFeature (mongo::OID featureID);
    std::auto_ptr<mongo::DBClientCursor> findFeatures ();
 
-   // returns the specified tagset
-   mongo::BSONObj findTagSet (mongo::OID tagsetID);
-   // returns the tagset for the given panorama and feature
-   mongo::BSONObj findTagSet (mongo::OID panoramaID, mongo::OID featureID);
-   // this returns the tagset containing the specified tag
-   mongo::BSONObj findTagSetWithTag (mongo::OID tagID);
-   // returns all tagsets of the given panorama
-   std::auto_ptr<mongo::DBClientCursor> findPanoramaTagSets (mongo::OID panoramaID);
-   // returns all tagsets of the given feature
-   std::auto_ptr<mongo::DBClientCursor> findFeatureTagSets (mongo::OID featureID);
+   mongo::BSONObj findTag (mongo::OID tagID);
+   std::auto_ptr<mongo::DBClientCursor> findTagsByPanorama (mongo::OID panoramaID);
+   std::auto_ptr<mongo::DBClientCursor> findTagsByFeature (mongo::OID featureID);
+   std::auto_ptr<mongo::DBClientCursor> findTags (mongo::OID panoramaID, mongo::OID featureID);
 
 
    //---------------------------------------------------------------------------

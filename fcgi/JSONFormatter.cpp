@@ -62,19 +62,19 @@ mongo::BSONObj JSONFormatter::features (std::auto_ptr<mongo::DBClientCursor> fea
 }
 
 //------------------------------------------------------------------------------
-mongo::BSONObj JSONFormatter::tagset (mongo::BSONObj tagset) {
-   return tagset;
+mongo::BSONObj JSONFormatter::tag (mongo::BSONObj tag) {
+   return tag;
 }
 
 //------------------------------------------------------------------------------
-mongo::BSONObj JSONFormatter::tagsets (std::auto_ptr<mongo::DBClientCursor> tagsets) {
+mongo::BSONObj JSONFormatter::tags (std::auto_ptr<mongo::DBClientCursor> tags) {
    mongo::BSONObjBuilder object;
    mongo::BSONArrayBuilder array;
 
-   while (tagsets->more()) {
-      array << tagset(tagsets->next());
+   while (tags->more()) {
+      array << tag(tags->next());
    }
-   object << "tagsets" << array.arr();
+   object << "tags" << array.arr();
 
    return object.obj();
 }
