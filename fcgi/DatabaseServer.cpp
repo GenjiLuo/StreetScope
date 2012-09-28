@@ -148,6 +148,24 @@ ostream& DatabaseServer::tags (ostream& os, Cgicc const& cgi) {
 }
 
 //------------------------------------------------------------------------------
+ostream& DatabaseServer::tagsByPanorama (ostream& os, Cgicc const& cgi) {
+   // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
+   printJSONHeader(os);
+   
+   // extract arguments
+   const_form_iterator panorama = cgi["panorama"];
+   if (panorama == cgi.getElements().end()) {
+      return os << mongo::BSONObj().jsonString();
+   }
+   PanoramaID panoramaID(panorama->getStrippedValue());
+
+   // get data from the database
+   std::auto_ptr<mongo::DBClientCursor> tags = _db.findTagsByPanorama(panoramaID);
+
+   return os << _json.tags(tags).jsonString();
+}
+
+//------------------------------------------------------------------------------
 ostream& DatabaseServer::downloadPanorama (ostream& os, cgicc::Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
    printJSONHeader(os);

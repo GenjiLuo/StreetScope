@@ -51,6 +51,9 @@ public:
    // cmd=tags, expects variables panorama and feature
    std::ostream& tags (std::ostream& os, cgicc::Cgicc const& cgi);
 
+   // cmd=tags_by_panorama, expects variable panorama
+   std::ostream& tagsByPanorama (std::ostream& os, cgicc::Cgicc const& cgi);
+
 
    //---------------------------------------------------------------------------
    // Inserts and Removals
