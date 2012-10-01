@@ -166,6 +166,32 @@ ostream& DatabaseServer::tagsByPanorama (ostream& os, Cgicc const& cgi) {
 }
 
 //------------------------------------------------------------------------------
+std::ostream& DatabaseServer::changeTagFeature (std::ostream& os, cgicc::Cgicc const& cgi) {
+   // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
+   printJSONHeader(os);
+   
+   // extract arguments
+   const_form_iterator tag = cgi["tag"];
+   if (tag == cgi.getElements().end()) {
+      return os << mongo::BSONObj().jsonString();
+   }
+   TagID tagID(tag->getStrippedValue());
+
+   const_form_iterator feature = cgi["feature"];
+   if (feature == cgi.getElements().end()) {
+      return os << mongo::BSONObj().jsonString();
+   }
+   FeatureID featureID(feature->getStrippedValue());
+
+   // perform the update
+   _db.changeTagFeature(tagID, featureID);
+
+   // check if it succeeded (ie returned json will be empty if the tag was not found)
+   mongo::BSONObj newtag = _db.findTag(tagID);
+   return os << _json.tag(newtag).jsonString();
+}
+
+//------------------------------------------------------------------------------
 ostream& DatabaseServer::downloadPanorama (ostream& os, cgicc::Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
    printJSONHeader(os);

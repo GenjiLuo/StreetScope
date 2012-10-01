@@ -56,6 +56,13 @@ public:
 
 
    //---------------------------------------------------------------------------
+   // Updates
+
+   // cmd=change_tag_feature, expects variables tag and feature
+   std::ostream& changeTagFeature (std::ostream& os, cgicc::Cgicc const& cgi);
+
+   
+   //---------------------------------------------------------------------------
    // Inserts and Removals
    
    // cmd=download_pano, expects variable panoid

@@ -21,7 +21,7 @@
 
 char const* const panoramaCollection = "streetview.panoramas";
 char const* const featureCollection = "streetview.features";
-char const* const tagCollection = "streetview.tag";
+char const* const tagCollection = "streetview.tags";
 char const* const tagsetCollection = "streetview.tagsets";
 char const* const configCollection = "streetview.config";
 
@@ -96,6 +96,12 @@ public:
    std::auto_ptr<mongo::DBClientCursor> findTagsByPanorama (mongo::OID panoramaID);
    std::auto_ptr<mongo::DBClientCursor> findTagsByFeature (mongo::OID featureID);
    std::auto_ptr<mongo::DBClientCursor> findTags (mongo::OID panoramaID, mongo::OID featureID);
+
+
+   //---------------------------------------------------------------------------
+   // Update Operations
+
+   void changeTagFeature (mongo::OID tagID, mongo::OID newFeatureID);
 
 
    //---------------------------------------------------------------------------

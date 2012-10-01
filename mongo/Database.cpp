@@ -129,7 +129,6 @@ OID Database::insertTag (OID panoramaID, OID featureID, AngleBox const& box) {
       << "phi2"   << box.phi2.rad()
    );
 
-
    // insert
    BSONObj t = tag.obj();
    _mongo.insert(tagCollection, t);
@@ -215,6 +214,13 @@ auto_ptr<DBClientCursor> Database::findTagsByFeature (mongo::OID featureID) {
 auto_ptr<DBClientCursor> Database::findTags (mongo::OID panoramaID, mongo::OID featureID) {
    BSONObj query = BSON( "panorama" << panoramaID << "feature" << featureID );
    return _mongo.query( tagCollection, query );
+}
+
+//------------------------------------------------------------------------------
+void Database::changeTagFeature (mongo::OID tagID, mongo::OID newFeatureID) {
+   BSONObj selector = BSON( "_id" << tagID );
+   BSONObj command  = BSON( "$set" << BSON( "feature" << newFeatureID ) );
+   _mongo.update( tagCollection, selector, command, false);
 }
 
 //------------------------------------------------------------------------------
