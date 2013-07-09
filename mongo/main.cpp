@@ -56,6 +56,10 @@ int main() {
    cout << "Looking for a panorama near " << testloc.lat << ", " << testloc.lon << ".\n";
    cout << database.findPanorama(testloc).jsonString() << '\n';
 
+   char const* panoid = "JTDCjycbFYmc_wEwID7qMA";
+   cout << "Looking for a panorama with panoid " << panoid << ".\n";
+   cout << database.findPanorama(panoid).jsonString() << '\n';
+
    cout << "Empty object looks like: \"" << BSONObj().jsonString() << "\".\n";
 
    //cout << "new id: " << newid.str() << '\n';
