@@ -1,0 +1,15 @@
+========== July 2013 - streetview project database ==========
+
+Dependencies:
+- Boost (system, thread, filesystem, and program_options modules)
+- ImageMagick++
+- libcurl
+- MongoDB
+
+The Makefile assumes that the MongoDB headers can be found in /usr/local/include/mongo.
+
+Running make without any arguments builds all objects and main.cpp.
+Running "make lib" builds the library that is used by the web service.
+
+In Database.cpp we assume that the MongoDB instance is running on localhost.
+
