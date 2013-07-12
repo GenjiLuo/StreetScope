@@ -1,27 +1,24 @@
-========== June 2012 - streetview project ==========
+========== July 2013 - streetview project ==========
 
-The streetview project currently has 3 components, each in its own directory:
+The streetview project has 3 components, each in its own directory:
 
--database: our custom database that stores copies of streetview panoramas, panorama metadata, and tags.
--fcgi: the web service that we run on an Amazon Elastic Cloud instance.
--python: the Google Street View mockup that interacts with our web service to allow users to tag panoramas.
+- fcgi: the web service that we run on an Amazon Elastic Cloud instance
+- mongo: C++ wrappers for a MongoDB instance that stores our panorama metadata and tags
+- webclient: our WebGL-based 3D tagging web app
 
 For more information on each, see the README files located in each directory.
+
+The legacy directory contains old code that is no longer used but may be helpful for historical/reference reasons.
 
 
 ========== Building ==========
 
-The database and web service are written in C++, compliant with the new 2011 standard.
+The database and web service are written in C++, compliant with the 2011 standard.
 Makefiles are included that attempt to build these projects using g++.
-Make sure that you have the most recent version of g++ (g++-4.7 as of June 30),
+Make sure that you have a recent version of g++ (g++-4.7 as of June 30, 2012),
 as older versions don't recognize some necessary c++11 features.
 There are also a few places where you may have to change hardcoded paths.
 These places are listed in the directory specific READMEs.
 
-June 30 Note: The python application here is out of date.
-I have not updated it to reflect recent changes to the database/webservice;
-as soon as this is done I'll push the changes to the repository.
-
-August 14 Note: The web based replacement for the python code will go up soon.
 
 -Erik

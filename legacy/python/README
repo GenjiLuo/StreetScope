@@ -1,3 +1,17 @@
+Legacy Street View Python Demo
+==============================
+
+The very first code written for the Street View project was essentially a Google Street View mockup written in Python by Zak Stone and Danny Zhu in Fall 2011.
+In 2012, Erik Strand updated the Python code to interact with a cloud-based database to permanently store Street View panoramas and metadata.
+Now this code has been replaced by a WebGL-based tagging web app, and is no longer maintained.
+It can no longer successfully communicate with our cloud database.
+
+- Erik, July 2013
+
+
+
+What follows is Zak Stone and Danny Zhu's original README file, included for history's sake:
+
 Initial Street View Demo
 Danny Zhu and Zak Stone
 Fall 2011

@@ -1,4 +1,12 @@
-========== June 2012 - streetview project database ==========
+Legacy StreetView Project Database
+==================================
+
+This directory contains the source for the original, custom streetview database written by Erik Strand in 2012.
+While the high level interface is still (as of July 2013) very similar to the current one, the low level code was gutted in favor of a wrapper for a MongoDB instance.
+
+
+
+Original README (circa late summer 2012):
 
 Dependencies:
 libcurl (libcurl4-openssl-dev)

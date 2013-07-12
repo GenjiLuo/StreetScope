@@ -1,14 +1,12 @@
-========== June 2012 - streetview project web service ==========
+========== July 2013 - streetview project web service ==========
 
 Dependencies:
-our database library (run "make; make lib" in the database directory)
-
-Dependencies:
-libcurl
-ImageMagick++
-cgicc (libcgicc5-dev)
-libfcgi (libfcgi-dev)
-libfcgi++
+- our database library (run "make; make lib" in the mongo directory)
+- libcurl
+- ImageMagick++
+- cgicc (libcgicc5-dev)
+- libfcgi (libfcgi-dev)
+- libfcgi++
 
 
 Building:
