@@ -4,64 +4,16 @@ var TAGGER = TAGGER || {}
 TAGGER.tags = (function () {
    var tags = {};
 
-   var _pano = {};
-
-   // stores all tags
    var _newTags = 0;
-   var _ntags = 0;
-   var _tagtable = {};
-
-   // stores all features
-   var _features = {
-      length: 0,
-      list: [],
-      idToName: {},
-      nameToID: {},
-      addFeature: function (feature) {
-         this.list.push(feature);
-         this.idToName[feature.id] = feature.name;
-         this.nameToID[feature.name] = feature.id;
-         this.length += 1;
-      },
-      initialize: function (feats) {
-         console.log(feats);
-         for (var i=0; i<feats.length; i+=1) {
-            this.addFeature(feats[i]);
-         }
-      },
-      findByName: function (name) {
-         if (this.nameToID.hasOwnProperty(name)) {
-            return { id: this.nameToID[name], name: name };
-         } else {
-            return {};
-         }
-      },
-      findByID: function (id) {
-         if (this.idToName.hasOwnProperty(id)) {
-            return { id: id, name: this.idToName[id] };
-         } else {
-            return {};
-         }
-      }
-   };
-
-   var _defaultFeature;
+   var _pano = {};
 
    // shows a tag
    function showTag (tag, id) {
       TAGGER.dhtml.addTag({
          'id': id,
-         'featureID': tag.feature,
-         'featureName': _features.findByID(tag.feature).name,
          'box': tag.box
       });
       TAGGER.graphics.addTag(tag.box, id);
-   }
-
-   // hides a tag
-   function hideTag (tagid) {
-      TAGGER.dhtml.removeTag(tagid);
-      TAGGER.graphics.removeTag(tagid);
    }
 
    // creates a tag
@@ -69,55 +21,57 @@ TAGGER.tags = (function () {
       TAGGER.app.showMessage('Saving tag to database...');
 
       var tempid = 'newtag_' + _newTags;
-      var tag = {
-         saved: false,
-         feature: _defaultFeature,
-         box: tagbox
-      };
-      _ntags += 1;
+      var tag = { saved: false, box: tagbox };
+      _pano.tags[tempid] = tag;
+      _pano.ntags += 1;
       _newTags += 1;
 
-      TAGGER.dhtml.updateTagNumber(_ntags);
+      TAGGER.dhtml.updateTagNumber(_pano.ntags);
       showTag(tag, tempid);
 
       // send data to database
-      TAGGER.cloud.save_tag(tagbox, _pano.id, _defaultFeature).done( function(newtag) {
-         _tagtable[newtag.id] = newtag;
-         TAGGER.dhtml.updateTagID(tempid, newtag.id);
-         TAGGER.graphics.updateTagID(tempid, newtag.id);
+      TAGGER.cloud.save_tag(tag, tempid, _pano.id).done( function(newid) {
+         delete _pano.tags[tempid];
+         tag.saved = true;
+         _pano.tags[newid] = tag;
+         TAGGER.dhtml.updateTagID(tempid, newid);
+         TAGGER.graphics.updateTagID(tempid, newid);
          TAGGER.app.showMessage('The tag was saved to the database.');
       }).fail( function(errorObj) {
          if (errorObj.type === TAGGER.error.databaseError) {
-            TAGGER.app.showError('Database was unable to save tag.');
+            tagger.app.showError('Database was unable to save tag.');
          } else {
-            TAGGER.app.showError('Could not communicate with the database.');
+            tagger.app.showError('Could not communicate with the database.');
          }
+         delete _pano.tags[tempid];
          hideTag(tempid);
-         _ntags -= 1;
-         TAGGER.dhtml.updateTagNumber(_ntags);
       });
    }
    tags.createTag = createTag;
 
+   // hides a tag
+   function hideTag (tagid) {
+      TAGGER.dhtml.removeTag(tagid);
+      TAGGER.graphics.removeTag(tagid);
+   }
+
    // deletes a tag
    function deleteTag (tagid) {
-      if (_tagtable[tagid]) {
+      if (_pano.tags[tagid]) {
          TAGGER.app.showMessage('Removing tag from database...');
          hideTag(tagid);
-         _ntags -= 1;
-         TAGGER.dhtml.updateTagNumber(_ntags);
+         _pano.ntags -= 1;
+         TAGGER.dhtml.updateTagNumber(_pano.ntags);
          TAGGER.cloud.delete_tag(tagid).done( function() {
-            delete _tagtable[tagid];
+            delete _pano.tags[tagid];
             TAGGER.app.showMessage('The tag was removed from the database.');
          }).fail( function (errorObj) {
             if (errorObj.type === TAGGER.error.databaseError) {
-               TAGGER.app.showError('Database was unable to delete the tag.');
+               tagger.app.showError('Database was unable to delete the tag.');
             } else {
-               TAGGER.app.showError('Could not communicate with the database.');
+               tagger.app.showError('Could not communicate with the database.');
             }
-            _ntags += 1;
-            TAGGER.dhtml.updateTagNumber(_ntags);
-            showTag(_tagtable[tagid], tagid);
+            delete _pano.tags[tagid];
          });
       }
    }
@@ -125,49 +79,33 @@ TAGGER.tags = (function () {
 
    // looks at a tag
    function locateTag (tagid) {
-      TAGGER.orientation.lookAt(_tagtable[tagid].box.center());
+      TAGGER.orientation.lookAt(_pano.tags[tagid].box.center());
    }
    tags.locateTag = locateTag;
 
-   // changes a tag's feature
-   function changeTagFeature (tagID, featureID) {
-      console.log("changing feature of tag " + tagID + " to " + featureID);
-   }
-   tags.changeTagFeature = changeTagFeature;
 
-
-   function changePano (pano, tags) {
+   function changePano (pano) {
       // remove old pano's tags and edges
-      for (tag in _tagtable) {
-         if (_tagtable.hasOwnProperty(tag)) {
-            hideTag(tag);
+      if (_pano.tags) {
+         for (tagid in _pano.tags) {
+            hideTag(tagid);
          }
       }
 
       // display new ones
-      _ntags = 0;
-      var newtagtable = {};
-      for (var i=0; i<tags.length; i+=1) {
-         showTag(tags[i], tags[i].id);
-         newtagtable[tags[i].id] = tags[i];
-         _ntags += 1;
+      TAGGER.dhtml.updateTagNumber(pano.ntags);
+      for (tagid in pano.tags) {
+         showTag(pano.tags[tagid], tagid);
       }
-      TAGGER.dhtml.updateTagNumber(_ntags);
 
-      // change pano and tagsets objects, reset newTags
+      // change pano object
       _newTags = 0;
       _pano = pano;
-      _tagtable = newtagtable;
    }
    tags.changePano = changePano;
 
-   tags.initialize = function (feats) {
-      _features.initialize(feats);
-      _defaultFeature = _features.list[0].id;
-   };
-
-   tags.changeDefaultFeature = function (featureID) {
-      _defaultFeature = featureID;
+   tags.initialize = function (pano) {
+      changePano(pano);
    };
 
 

@@ -23,8 +23,6 @@ TAGGER.dhtml = (function () {
 
    // expects params to have the following keys:
    // id: tag id
-   // featureID: feature id
-   // featureName: feature name
    // box: {theta1, phi1, theta2, phi2}
    dhtml.addTag = function (params) {
       // set up container
@@ -38,7 +36,7 @@ TAGGER.dhtml = (function () {
       id_k.innerHTML = 'id';
       var type_k = document.createElement('div');
       type_k.className = 'tagkey';
-      type_k.innerHTML = 'feature';
+      type_k.innerHTML = 'type';
 
       if (showBoxes) {
          var t1_k = document.createElement('div');
@@ -59,11 +57,9 @@ TAGGER.dhtml = (function () {
       var id_v = document.createElement('div');
       id_v.className = 'tagvalue tagid';
       id_v.innerHTML = params.id;
-      var type_v = $("#feature_selector").clone();
-      type_v.val(params.featureID);
-      type_v.attr("id", "fs_" + params.id);
+      var type_v = document.createElement('div');
       type_v.className = 'tagvalue';
-      type_v.change( function() { TAGGER.tags.changeTagFeature(params.id, $("#fs_" + params.id).val()); } );
+      type_v.innerHTML = 'person';
 
       if (showBoxes) {
          var t1_v = document.createElement('div');
@@ -108,7 +104,7 @@ TAGGER.dhtml = (function () {
       tag.appendChild(id_v);
       tag.appendChild(separator[0]);
       tag.appendChild(type_k);
-      type_v.appendTo(tag);
+      tag.appendChild(type_v);
       tag.appendChild(separator[1]);
 
       if (showBoxes) {
@@ -193,14 +189,9 @@ TAGGER.dhtml = (function () {
    };
 
    dhtml.removeEdges = function () {
-      $('#edgediv').find('.edge').each( function (i) {
+      $('#edgediv').find('.edge').each(function (i) {
          $(this).remove();
       });
-   };
-
-   dhtml.addFeature = function (feature) {
-      var htmlstring = "<option value='" + feature.id + "'>" + feature.name + "</option>";
-      $(htmlstring).appendTo("#feature_selector");
    };
 
    return dhtml;

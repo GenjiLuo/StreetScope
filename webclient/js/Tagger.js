@@ -7,21 +7,6 @@ TAGGER.common = (function () {
    common.radToDeg = 180 / Math.PI;
    common.degToRad = Math.PI / 180;
 
-   // Uses the numerically stable Haversine formula to compute the distance between
-   // two locations along the surface of the earth.
-   common.distance = function (pt1, pt2) {
-      var R = 6371000; // meters
-      var dLat = (pt2.lat - pt1.lat);
-      var dLon = (pt2.lon - pt1.lon);
-      var lat1 = pt1.lat;
-      var lat2 = pt2.lat;
-
-      var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
-      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-      return R * c;
-   }
-
    // args should have keys theta1, phi1, theta2, and phi2
    common.box = function (args) {
       var box = {};
@@ -101,8 +86,6 @@ TAGGER.app = (function () {
    // current panorama
    var _pano = {};
 
-
-
    // DOM elements
    var _container;
    var _preloader;
@@ -113,6 +96,7 @@ TAGGER.app = (function () {
 
 
    function showMessage (message) {
+      showError('');
       _message.innerHTML = message;
    }
    app.showMessage = showMessage;
@@ -153,7 +137,7 @@ TAGGER.app = (function () {
    }
 
    // everything that should be done to change the panorama metadata
-   function changePanoMetadata (pano, tags) {
+   function changePanoMetadata (pano) {
       // change metadata
       TAGGER.dhtml.changePanoMetadata(pano);
 
@@ -168,7 +152,7 @@ TAGGER.app = (function () {
       }
 
       // change tags
-      TAGGER.tags.changePano(pano, tags);
+      TAGGER.tags.changePano(pano);
 
       // reorient pano
       var tiltAxis = new THREE.Vector3(Math.cos(pano.tiltYaw), 0, -Math.sin(pano.tiltYaw));
@@ -196,9 +180,9 @@ TAGGER.app = (function () {
    }
 
    // changes data and metadata
-   function changePanorama (pano, tags, image) {
+   function changePanorama (pano, image) {
       changePanoData(image);
-      changePanoMetadata(pano, tags);
+      changePanoMetadata(pano);
       if (pano.indb) {
          TAGGER.handlers.onGooglePano(false);
          showMessage('Panorama loaded from the database.');
@@ -210,40 +194,19 @@ TAGGER.app = (function () {
    }
 
 
-   // loads the panorama image and tags
+   // loads the panorama image
    function loadDatabasePanorama (pano) {
-      var imagePromise = $.Deferred();
-      var tagsPromise = $.Deferred();
-      var image;
-      var tags;
-
-      TAGGER.cloud.get_data(pano.id).done( function (returned_image) {
-         image = returned_image;
-         imagePromise.resolve();
+      TAGGER.cloud.get_data(pano.id).done( function (image) {
+         changePanorama(pano, image);
       }).fail( function(errorObj) {
          showError('Error while loading panorama: ' + errorObj.description);
-         imagePromise.reject();
-      });
-
-      TAGGER.cloud.get_tags_by_panorama(pano.id).done( function (returned_tags) {
-         tags = returned_tags;
-         tagsPromise.resolve();
-      }).fail( function(errorObj) {
-         showError('Error while loading tags: ' + errorObj.description);
-         tagsPromise.reject();
-      });
-
-      $.when(imagePromise, tagsPromise).done( function () {
-         changePanorama(pano, tags, image);
-      }).fail( function () {
          abortLoading();
       });
    }
  
    function loadGooglePanorama (pano) {
-      console.log(pano.panoid);
       TAGGER.gsv.getData(pano.panoid).done( function (image) {
-         changePanorama(pano, [], image);
+         changePanorama(pano, image);
       }).fail( function(errorObj) {
          showError('Error while loading panorama: ' + errorObj.description);
          abortLoading();
@@ -259,17 +222,11 @@ TAGGER.app = (function () {
          abortLoading();
       });
    }
-
+            
    function loadPanoramaNear (lat, lon) {
       startLoading();
       showMessage('Searching in the database...');
-      TAGGER.cloud.panoNear(lat, lon).done( function(pano) {
-         if (TAGGER.common.distance({lat: lat, lon: lon}, pano.loc) <= 3) {
-            loadDatabasePanorama(pano);
-         } else {
-            loadGooglePanoramaNear(lat, lon);
-         }
-      }).fail( function (errorObj) {
+      TAGGER.cloud.panoNear(lat, lon).done( loadDatabasePanorama ).fail( function (errorObj) {
          if (errorObj.type === TAGGER.error.databaseError) {
             loadGooglePanoramaNear(lat, lon);
          } else {
@@ -292,7 +249,7 @@ TAGGER.app = (function () {
    }
 
    function loadGooglePanoramaByPanoid (panoid) {
-      showMessage('Loading panorama from Google Street View...');
+      showMessage('Searching in Google Street View...');
       TAGGER.gsv.getMetadata(panoid).done( loadGooglePanorama ).fail( function(errorObj) {
          showError('Error while loading Google metadata: ' + errorObj.description);
          abortLoading();
@@ -302,7 +259,7 @@ TAGGER.app = (function () {
    function loadPanoramaByPanoidNear (panoid, lat, lon) {
       startLoading();
       showMessage('Searching in the database...');
-      TAGGER.cloud.panoByPanoid(panoid, lat, lon).done( loadDatabasePanorama ).fail( function (errorObj) {
+      TAGGER.cloud.panoByPanoidNear(panoid, lat, lon).done( loadDatabasePanorama ).fail( function (errorObj) {
          if (errorObj.type === TAGGER.error.databaseError) {
             loadGooglePanoramaByPanoid(panoid);
          } else {
@@ -450,20 +407,11 @@ TAGGER.app = (function () {
       _error = document.getElementById("error");
       _downloadButton = document.getElementById("save_btn");
 
-      // Load Features
-      TAGGER.cloud.get_features().done( function(feats) {
-         TAGGER.tags.initialize(feats);
-         for (var i=0; i<feats.length; i+=1) {
-            TAGGER.dhtml.addFeature(feats[i]);
-         }
-      }).fail( function(errorObj) {
-         showError('Error while loading features: ' + errorObj.description);
-      });
-
       // Initialize modules
       TAGGER.graphics.initialize(_container, initialFovPhi);
       TAGGER.map.initialize(pos.lat, pos.lon);
       TAGGER.map.setOnMoveMarker(loadPanoramaNear);
+      TAGGER.tags.initialize(_pano);
       TAGGER.gsv.initialize();
       TAGGER.handlers.initialize(_container);
 
@@ -496,11 +444,6 @@ TAGGER.app = (function () {
          })(i);
       }
       quietSetZoom(3);
-
-      // bind feature drop down handler
-      $("#feature_selector").change( function() {
-         TAGGER.tags.changeDefaultFeature($("#feature_selector").val());
-      });
 
       // start animating
       animate();
