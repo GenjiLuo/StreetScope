@@ -135,7 +135,7 @@ TAGGER.graphics = (function () {
       if (!intersects[0]) {
          console.log("Error: Could not find intersection with sphere!");
       }
-      console.log(intersects[0].point);
+      //console.log(intersects[0].point);
       return intersects[0].point;
    };
 
