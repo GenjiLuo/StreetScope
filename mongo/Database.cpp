@@ -21,7 +21,7 @@ bool Database::connect () {
    try {
       _mongo.connect("localhost");
    } catch( DBException &e ) {
-      cout << "caught " << e.what() << endl;
+      cout << "Caught " << e.what() << endl;
       return false;
    }
 
@@ -29,6 +29,7 @@ bool Database::connect () {
    if (cursor->more()) {
       _panoDir = cursor->next()["panorama_dir"].String();
    } else {
+      cout << "Connected to MongoDB, but could not find configuration collection." << endl;
       return false;
    }
 

@@ -7,7 +7,7 @@ FCGI_LIBS = -lcgicc -lfcgi++ -lfcgi
 INCLUDES  = -I/usr/include/cgicc -Iexternal -I$(databasedir)
 IMONGO = -I/usr/local/include/mongo
 LFLAGS = -lcurl `Magick++-config --ldflags --libs`
-LMONGO = -lmongoclient -lboost_system -lboost_thread -lboost_filesystem -lboost_program_options
+LMONGO = -lpthread -lmongoclient -lboost_system -lboost_thread -lboost_filesystem -lboost_program_options
 
 # convenience variables
 odir = bin

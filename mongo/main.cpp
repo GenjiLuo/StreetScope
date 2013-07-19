@@ -10,7 +10,7 @@ int main() {
    if (database.connect()) {
       cout << "Connected to MongoDB.\n";
    } else {
-      cout << "Aborting.\n";
+      cout << "Error connecting to the database. Aborting.\n";
       return 0;
    }
    database.ensureIndexes();
