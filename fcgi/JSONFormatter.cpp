@@ -17,9 +17,11 @@ using namespace mongo;
 
 //------------------------------------------------------------------------------
 mongo::BSONObj JSONFormatter::panorama (mongo::BSONObj panorama) {
-   return panorama;
+   // if the panorama is empty there's nothing to be done
+   if (panorama.isEmpty()) {
+      return panorama;
+   }
 
-   /*
    BSONObjBuilder bpano;
 
    // add basic data
@@ -33,14 +35,21 @@ mongo::BSONObj JSONFormatter::panorama (mongo::BSONObj panorama) {
       "lat" << panorama.getObjectField("originalLocation")[1].Double()
       << "lon" << panorama.getObjectField("originalLocation")[0].Double()
    );
-   bpano << "panoYaw" << panorama.getObjectField("orientation")["yaw"].Double();
-   bpano << "tiltYaw" << panorama.getObjectField("orientation")["tiltYaw"].Double();
-   bpano << "tiltPitch" << panorama.getObjectField("orientation")["tiltPitch"].Double();
+   bpano << "orientation" << BSON(
+      "panoYaw" << panorama.getObjectField("orientation")["yaw"].Double()
+      << "tiltYaw" << panorama.getObjectField("orientation")["tiltYaw"].Double()
+      << "tiltPitch" << panorama.getObjectField("orientation")["tiltPitch"].Double()
+   );
 
    // add edges
+   mongo::BSONArrayBuilder array;
+   mongo::BSONObjIterator edges(panorama.getObjectField("edges"));
+   while (edges.more()) {
+      array << edges.next();
+   }
+   bpano << "edges" << array.arr();
 
    return bpano.obj();
-   */
 }
 
 //------------------------------------------------------------------------------

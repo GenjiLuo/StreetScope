@@ -131,9 +131,12 @@ public:
    std::ostream& renderImageURL (std::ostream& url, char const* panoid, unsigned x, unsigned y, unsigned zoom);
 
    // Converts a yaw as stored by Google (degrees clockwise from north)
-   // to our azimuthal angle convention (degrees counterclockwise from east).
+   // to our azimuthal angle convention (radians counterclockwise from east).
    inline double convertYaw (double yaw) const;
-   
+   // Converts a pitch as stored by Google (degrees up from perpendicular to gravitational up)
+   // to our convention (radians up from perpendicular to gravitational up).
+   inline double convertPitch (double pitch) const;
+
 private:
    // downloads the contents of url to buffer
    // Warning: it doesn't know the difference between text and data, so make sure
@@ -167,8 +170,12 @@ double ImageDownloader::convertYaw (double yaw) const {
       newyaw = 90.0 - yaw;
    else
       newyaw = 450.0 - yaw;
-   return newyaw;
+   return newyaw * (3.14159265359/180.0);
 }
 
+//------------------------------------------------------------------------------
+double ImageDownloader::convertPitch (double pitch) const {
+   return pitch * (3.14159265359/180.0);
+}
 
 #endif // GOOGLE_MAPS

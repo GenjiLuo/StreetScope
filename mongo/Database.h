@@ -47,6 +47,7 @@ friend class DatabaseTester;
 public:
    mongo::DBClientConnection _mongo;
    boost::filesystem::path _panoDir;
+   boost::filesystem::path _logFile;
 
 public:
    //---------------------------------------------------------------------------
@@ -57,7 +58,7 @@ public:
    bool connect ();
 
    // Indexing
-   void ensureIndexes ();
+   void ensureIndices ();
 
    // Counts
    unsigned panoramas () { return _mongo.count(panoramaCollection); }
@@ -67,6 +68,7 @@ public:
    // Accessors
    std::string panoramaDirectory () const { return _panoDir.string(); }
    std::string panoramaPath (mongo::OID panoramaID) const;
+   std::string logFile () const { return _logFile.string(); }
 
 
    //---------------------------------------------------------------------------

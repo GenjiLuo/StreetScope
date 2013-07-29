@@ -39,7 +39,7 @@ ostream& DatabaseServer::status (ostream& os, cgicc::Cgicc const& cgi, bool fail
 
 
 //------------------------------------------------------------------------------
-ostream& DatabaseServer::panorama (ostream& os, Cgicc const& cgi) {
+ostream& DatabaseServer::panorama (ostream& os, Cgicc const& cgi, ofstream& log) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
    printJSONHeader(os);
    
@@ -51,12 +51,18 @@ ostream& DatabaseServer::panorama (ostream& os, Cgicc const& cgi) {
    PanoramaID panoramaID(id->getStrippedValue());
 
    // get response from the database
-   mongo::BSONObj panorama = _db.findPanorama(panoramaID);
-   return os << _json.panorama(panorama).jsonString();
+   mongo::BSONObj panorama;
+   try {
+      panorama = _db.findPanorama(panoramaID);
+      return os << _json.panorama(panorama).jsonString();
+   } catch(const exception& e) {
+      log << "Error in DatabaseServer::panorama: " << e.what() << '\n';
+      throw(e);
+   }
 }
 
 //------------------------------------------------------------------------------
-ostream& DatabaseServer::panoramaNear (ostream& os, Cgicc const& cgi) {
+ostream& DatabaseServer::panoramaNear (ostream& os, Cgicc const& cgi, ostream& log) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
    printJSONHeader(os);
    
@@ -67,6 +73,7 @@ ostream& DatabaseServer::panoramaNear (ostream& os, Cgicc const& cgi) {
    }
    double lat = latform->getDoubleValue();
 
+
    const_form_iterator lonform = cgi["lon"];
    if (lonform == cgi.getElements().end()) {
       return os << mongo::BSONObj().jsonString();
@@ -74,12 +81,18 @@ ostream& DatabaseServer::panoramaNear (ostream& os, Cgicc const& cgi) {
    double lon = lonform->getDoubleValue();
 
    // get response from the database
-   mongo::BSONObj panorama = _db.findPanorama(Location(lon, lat));
-   return os << _json.panorama(panorama).jsonString();
+   try {
+      mongo::BSONObj panorama;
+      panorama = _db.findPanorama(Location(lon, lat));
+      return os << _json.panorama(panorama).jsonString();
+   } catch(const exception& e) {
+      log << "Error in DatabaseServer::panoramaNear: " << e.what() << '\n';
+      throw(e);
+   }
 }
 
 //------------------------------------------------------------------------------
-ostream& DatabaseServer::panoramaByPanoid (ostream& os, Cgicc const& cgi) {
+ostream& DatabaseServer::panoramaByPanoid (ostream& os, Cgicc const& cgi, ostream& log) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
    printJSONHeader(os);
    
@@ -99,7 +112,7 @@ ostream& DatabaseServer::panoramaByPanoid (ostream& os, Cgicc const& cgi) {
 ostream& DatabaseServer::feature (ostream& os, Cgicc const& cgi) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
    printJSONHeader(os);
-   
+
    // extract info
    const_form_iterator id = cgi["id"];
    if (id == cgi.getElements().end()) {
@@ -192,7 +205,7 @@ std::ostream& DatabaseServer::changeTagFeature (std::ostream& os, cgicc::Cgicc c
 }
 
 //------------------------------------------------------------------------------
-ostream& DatabaseServer::downloadPanorama (ostream& os, cgicc::Cgicc const& cgi) {
+ostream& DatabaseServer::downloadPanorama (ostream& os, cgicc::Cgicc const& cgi, ostream& log) {
    // Output the HTTP headers for an HTML document, and the HTML 4.0 DTD info
    printJSONHeader(os);
    

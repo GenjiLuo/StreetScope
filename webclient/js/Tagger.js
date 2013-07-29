@@ -11,10 +11,10 @@ TAGGER.common = (function () {
    // two locations along the surface of the earth.
    common.distance = function (pt1, pt2) {
       var R = 6371000; // meters
-      var dLat = (pt2.lat - pt1.lat);
-      var dLon = (pt2.lon - pt1.lon);
-      var lat1 = pt1.lat;
-      var lat2 = pt2.lat;
+      var dLat = (pt2.lat - pt1.lat) * Math.PI / 180;
+      var dLon = (pt2.lon - pt1.lon) * Math.PI / 180;
+      var lat1 = pt1.lat * Math.PI / 180;
+      var lat2 = pt2.lat * Math.PI / 180;
 
       var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
               Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
@@ -100,8 +100,6 @@ TAGGER.app = (function () {
 
    // current panorama
    var _pano = {};
-
-
 
    // DOM elements
    var _container;
@@ -241,7 +239,6 @@ TAGGER.app = (function () {
    }
  
    function loadGooglePanorama (pano) {
-      console.log(pano.panoid);
       TAGGER.gsv.getData(pano.panoid).done( function (image) {
          changePanorama(pano, [], image);
       }).fail( function(errorObj) {
@@ -264,7 +261,9 @@ TAGGER.app = (function () {
       startLoading();
       showMessage('Searching in the database...');
       TAGGER.cloud.panoNear(lat, lon).done( function(pano) {
-         if (TAGGER.common.distance({lat: lat, lon: lon}, pano.loc) <= 3) {
+         var dist = TAGGER.common.distance({lat: lat, lon: lon}, pano.loc);
+         console.log("distance:", dist);
+         if (dist <= 12) {
             loadDatabasePanorama(pano);
          } else {
             loadGooglePanoramaNear(lat, lon);
@@ -424,7 +423,6 @@ TAGGER.app = (function () {
    }
    */
 
-
    // starts the app
    function start () {
       // get the loading bar up
@@ -439,9 +437,8 @@ TAGGER.app = (function () {
          pos = { lat: parts[ 0 ], lon: parts[ 1 ] };
       } else {
          // maxwell dworkin
-         pos = { lat: 42.378742, lon: -71.1166};
+         pos = { lat: 42.378742, lon: -71.1166 };
       }
-      console.log(pos);
 
       // find DOM elements
       _container = document.getElementById("container");
@@ -468,9 +465,6 @@ TAGGER.app = (function () {
       TAGGER.handlers.initialize(_container);
 
       // set panorama
-      // 3bc5169b = 1002772123
-      // 84928c3  = 139012302
-      //loadDatabasePanoramaById('3bc5169b');
       loadPanoramaNear(pos.lat, pos.lon);
 
       // set fov, bind resize handler

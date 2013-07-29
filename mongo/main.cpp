@@ -13,7 +13,9 @@ int main() {
       cout << "Error connecting to the database. Aborting.\n";
       return 0;
    }
-   database.ensureIndexes();
+   database.ensureIndices();
+
+   return 0;
 
    Panorama pano;
    pano.location.lon = 10;

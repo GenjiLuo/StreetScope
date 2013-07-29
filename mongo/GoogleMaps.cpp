@@ -129,9 +129,9 @@ bool ImageDownloader::read_sv_xml (Panorama& panorama) {
    panorama.originalLocation.lat = data_node.attribute("original_lat").as_double();
 
    // extract orientation
-   panorama.yaw.setDeg( convertYaw( proj_node.attribute("pano_yaw_deg").as_double() ) );
-   panorama.tiltYaw.setDeg( convertYaw( proj_node.attribute("tilt_yaw_deg").as_double() ) );
-   panorama.tiltPitch.setDeg( proj_node.attribute("tilt_pitch_deg").as_double() );
+   panorama.yaw.setRad( convertYaw( proj_node.attribute("pano_yaw_deg").as_double() ) );
+   panorama.tiltYaw.setRad( convertYaw( proj_node.attribute("tilt_yaw_deg").as_double() ) );
+   panorama.tiltPitch.setRad( convertPitch( proj_node.attribute("tilt_pitch_deg").as_double() ) );
 
    // extract capture date
    CharPoolIndex did = _strings.addString(data_node.attribute("image_date").value());
@@ -158,7 +158,7 @@ bool ImageDownloader::read_sv_xml (Panorama& panorama) {
    pugi::xml_node edge_node = anno_node.first_child();
    Edge edge;
    while (edge_node) {
-      edge.angle.setDeg( convertYaw( edge_node.attribute("yaw_deg").as_double() ) );
+      edge.angle.setRad( convertYaw( edge_node.attribute("yaw_deg").as_double() ) );
       pid = _strings.addString(edge_node.attribute("pano_id").value());
       edge.panoid = _strings.getString(pid);
       panorama.edges.push_back(edge);

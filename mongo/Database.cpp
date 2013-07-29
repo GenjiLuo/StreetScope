@@ -18,6 +18,7 @@ using namespace mongo;
 
 //------------------------------------------------------------------------------
 bool Database::connect () {
+   // Establish a connection
    try {
       _mongo.connect("localhost");
    } catch( DBException &e ) {
@@ -25,9 +26,17 @@ bool Database::connect () {
       return false;
    }
 
+   // Read configuration information
    auto_ptr<DBClientCursor> cursor = _mongo.query( configCollection, BSONObj() );
    if (cursor->more()) {
-      _panoDir = cursor->next()["panorama_dir"].String();
+      try {
+         BSONObj conf = cursor->next();
+         _panoDir = conf["panorama_dir"].String();
+         _logFile = conf["log_file"].String();
+      } catch(const exception& e) {
+         cout << "Connected to MongoDB, but could not extract configuration information." << endl;
+         return false;
+      }
    } else {
       cout << "Connected to MongoDB, but could not find configuration collection." << endl;
       return false;
@@ -37,7 +46,7 @@ bool Database::connect () {
 }
 
 //------------------------------------------------------------------------------
-void Database::ensureIndexes () {
+void Database::ensureIndices () {
    _mongo.ensureIndex(panoramaCollection, BSON("location" << "2d"));
    _mongo.ensureIndex(panoramaCollection, BSON("panoid" << 1));
    _mongo.ensureIndex(tagCollection, BSON("panorama" << 1 << "feature" << 1));

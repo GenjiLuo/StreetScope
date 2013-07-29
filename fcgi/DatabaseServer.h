@@ -13,6 +13,7 @@
 #include "JSONFormatter.h"
 #include "pugixml.hpp"
 
+#include <fstream>
 
 //==============================================================================
 // Class DatabaseServer
@@ -34,13 +35,13 @@ public:
    // Queries
    
    // cmd=panorama, expects variable id
-   std::ostream& panorama (std::ostream& os, cgicc::Cgicc const& cgi);
+   std::ostream& panorama (std::ostream& os, cgicc::Cgicc const& cgi, std::ofstream& log);
 
    // cmd=panorama_near, expects variables lat and lon
-   std::ostream& panoramaNear (std::ostream& os, cgicc::Cgicc const& cgi);
+   std::ostream& panoramaNear (std::ostream& os, cgicc::Cgicc const& cgi, std::ostream& log);
 
    // cmd=panorama_by_panoid, expects variable panoid
-   std::ostream& panoramaByPanoid (std::ostream& os, cgicc::Cgicc const& cgi);
+   std::ostream& panoramaByPanoid (std::ostream& os, cgicc::Cgicc const& cgi, std::ostream& log);
 
    // cmd=feature, expects variable id
    std::ostream& feature (std::ostream& os, cgicc::Cgicc const& cgi);
@@ -66,7 +67,7 @@ public:
    // Inserts and Removals
    
    // cmd=download_pano, expects variable panoid
-   std::ostream& downloadPanorama (std::ostream& os, cgicc::Cgicc const& cgi);
+   std::ostream& downloadPanorama (std::ostream& os, cgicc::Cgicc const& cgi, std::ostream& log);
 
    // cmd=insert_tag, expects variables panorama, feature, t1, p1, t2, p2
    std::ostream& insertTag (std::ostream& os, cgicc::Cgicc const& cgi);

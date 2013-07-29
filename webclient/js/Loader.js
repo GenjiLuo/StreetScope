@@ -1,4 +1,5 @@
 // Loader.js
+// Functions that help load data from Google Street View
 
 var TAGGER = TAGGER || {}
 TAGGER.gsv = (function () {
@@ -7,14 +8,22 @@ TAGGER.gsv = (function () {
    var loader = null;
    var sv_url = "http://maps.google.com/cbk"; 
 
-   // converts from Google's yaw system (clockwise from north)
-   // to ours (counterclockwise from east)
+   // converts from Google's yaw system (degrees clockwise from north)
+   // to ours (radians counterclockwise from east)
    function convertYaw (theta) {
+      var newTheta;
       if (theta <= 90) {
-         return 90 - theta;
+         newTheta = 90 - theta;
       } else {
-         return 450 - theta;
+         newTheta = 450 - theta;
       }
+      return newTheta * TAGGER.common.degToRad;
+   }
+
+   // converts from Google's pitch system (degrees up from perpendicular to gravitiational up)
+   // to ours (radians up from perpendicular to gravitational up)
+   function convertPitch (phi) {
+      return phi * TAGGER.common.degToRad;
    }
 
    gsv.initialize = function () {
@@ -56,9 +65,9 @@ TAGGER.gsv = (function () {
          indb: false,
          loc: { lat: parseFloat(json.Location.lat),
                 lon: parseFloat(json.Location.lng) },
-         panoYaw: convertYaw(json.Projection.pano_yaw_deg) * TAGGER.common.degToRad,
-         tiltYaw: convertYaw(json.Projection.tilt_yaw_deg) * TAGGER.common.degToRad,
-         tiltPitch: json.Projection.tilt_pitch_deg * TAGGER.common.degToRad,
+         panoYaw: convertYaw(json.Projection.pano_yaw_deg),
+         tiltYaw: convertYaw(json.Projection.tilt_yaw_deg),
+         tiltPitch: convertPitch(json.Projection.tilt_pitch_deg),
          unsavedTags: 0,
          ntags: 0,
          tags: {},
@@ -69,7 +78,7 @@ TAGGER.gsv = (function () {
       for (i in json.Links) {
          pano.edges.push({
             panoid: json.Links[i].panoId,
-            theta: convertYaw(json.Links[i].yawDeg) * TAGGER.common.degToRad
+            theta: convertYaw(json.Links[i].yawDeg)
          });
          pano.nedges += 1;
       }

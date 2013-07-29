@@ -4,33 +4,29 @@ var TAGGER = TAGGER || {};
 TAGGER.cloud = (function () {
    var cloud = {};
 
-   var db_url = "http://23.23.248.157/test/fcgi/main.fcgi";
+   //var db_url = "http://23.23.248.157/test/fcgi/main.fcgi";
+   var db_url = "http://localhost/fcgi/main.fcgi";
    var db_pano_dir = "panos/";
 
 
    // parses feature json
    function read_feature_json (json) {
-      console.log(json);
-
       var feature = {
          id: json._id.$oid,
          name: json.name
       };
-
       return feature;
    }
 
    // returns a panorama object parsed from our database
    function read_pano_json (json) {
-      console.log(json);
-
       var pano = {
-         id: json._id.$oid,
+         id: json.id,
          panoid: json.panoid,
          indb: true,
-         loc: { lat: parseFloat(json.location[1]),
-                lon: parseFloat(json.location[0]) },
-         panoYaw: parseFloat(json.orientation.yaw),
+         loc: { lat: parseFloat(json.location.lat),
+                lon: parseFloat(json.location.lon) },
+         panoYaw: parseFloat(json.orientation.panoYaw),
          tiltYaw: parseFloat(json.orientation.tiltYaw),
          tiltPitch: parseFloat(json.orientation.tiltPitch),
          unsavedTags: 0,
@@ -50,8 +46,6 @@ TAGGER.cloud = (function () {
    }
 
    function read_tag_json (json) {
-      console.log(json);
-
       var tag = {
          id: json._id.$oid,
          panorama: json.panorama.$oid,

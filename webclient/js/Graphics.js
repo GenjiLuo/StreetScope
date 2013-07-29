@@ -37,7 +37,8 @@ TAGGER.graphics = (function () {
 
    graphics.setFov = function (params) {
       camera.fov = params.phi * 180 / Math.PI;
-      camera.aspect = 1 / params.aspect;
+      var aspect = params.phi / params.theta; // this is an incorrect approximation - not close enough
+      camera.aspect = 1 / aspect;
       camera.updateProjectionMatrix();
    }
 
@@ -60,6 +61,9 @@ TAGGER.graphics = (function () {
       renderer.render(scene, camera);
    };
 
+   // Draws a red line indicating the x axis (should be east),
+   // a blue line indicating the z axis (should be south),
+   // and a green line indicating the y axis (should be up)
    function addAxes () {
       var lineMat1 = new THREE.LineBasicMaterial({ color: 0xdd3333, opacity: 1, linewidth: 3 });
       var lineMat2 = new THREE.LineBasicMaterial({ color: 0x33dd33, opacity: 1, linewidth: 3 });
@@ -168,7 +172,7 @@ TAGGER.graphics = (function () {
       renderer.setSize(width, height);
       _container.appendChild(renderer.domElement);
 
-      addAxes();
+      //addAxes();
    };
 
    return graphics;
